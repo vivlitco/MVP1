@@ -19,7 +19,7 @@ type AppState = 'LANDING' | 'AUTH' | 'APP' | 'SHARED_VIEW' | 'GUEST_CREATING';
 const App: React.FC = () => {
   const [appState, setAppState] = useState<AppState>('LANDING');
   const [view, setView] = useState<View>('HOME');
-  
+
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [jars, setJars] = useState<JarType[]>([]);
 
@@ -32,39 +32,44 @@ const App: React.FC = () => {
 
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const jarId = urlParams.get('jarId');
-    if (jarId) {
-      const sharedJar = dataService.getSharedJar(jarId);
-      if (sharedJar) {
-        setSelectedJar(sharedJar);
-        setAppState('SHARED_VIEW');
+    const initApp = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const jarId = urlParams.get('jarId');
+      if (jarId) {
+        const sharedJar = await dataService.getSharedJar(jarId);
+        if (sharedJar) {
+          setSelectedJar(sharedJar);
+          setAppState('SHARED_VIEW');
+        }
+      } else {
+        const user = authService.getCurrentUser();
+        if (user) {
+          handleUserLogin(user);
+        }
       }
-    } else {
-      const user = authService.getCurrentUser();
-      if (user) {
-        handleUserLogin(user);
-      }
-    }
+    };
+    initApp();
   }, []);
 
-  const handleUserLogin = (user: User) => {
+  const handleUserLogin = async (user: User) => {
     setCurrentUser(user);
-    let userJars = dataService.getJarsForUser(user.id);
+    const userJars = await dataService.getJarsForUser(user.id);
 
     if (pendingJar) {
-        const finalJar: JarType = {
-            ...pendingJar,
-            id: `jar-${Date.now()}`,
-            senderName: user.name,
-            sentDate: new Date().toISOString(),
-            direction: JarDirection.SENT,
-        };
-        userJars = dataService.saveJarForUser(user.id, finalJar);
-        setPendingJar(null);
+      const finalJar: JarType = {
+        ...pendingJar,
+        id: `jar-${Date.now()}`, // Temp ID, backend will ignore or replace
+        senderName: user.name,
+        sentDate: new Date().toISOString(),
+        direction: JarDirection.SENT,
+      };
+      const updatedJars = await dataService.saveJarForUser(user.id, finalJar);
+      setJars(updatedJars);
+      setPendingJar(null);
+    } else {
+      setJars(userJars);
     }
 
-    setJars(userJars);
     setAppState('APP');
     setView('HOME');
   };
@@ -76,16 +81,20 @@ const App: React.FC = () => {
     setAppState('AUTH');
   };
 
-  const handleSaveJar = (jarToSave: JarType) => {
+  const handleSaveJar = async (jarToSave: JarType) => {
     if (currentUser) {
-        const updatedJars = dataService.saveJarForUser(currentUser.id, jarToSave);
+      try {
+        const updatedJars = await dataService.saveJarForUser(currentUser.id, jarToSave);
         setJars(updatedJars);
         setView('HOME');
         setJarToEdit(null);
+      } catch (error) {
+        alert("Failed to save jar. Please try again.");
+      }
     } else {
-        // Guest is trying to save a jar, prompt for authentication
-        setPendingJar(jarToSave);
-        setAppState('AUTH');
+      // Guest is trying to save a jar, prompt for authentication
+      setPendingJar(jarToSave);
+      setAppState('AUTH');
     }
   };
 
@@ -98,16 +107,20 @@ const App: React.FC = () => {
     setJarToDelete(jar);
   };
 
-  const handleDeleteJar = () => {
+  const handleDeleteJar = async () => {
     if (jarToDelete && currentUser) {
-      const updatedJars = dataService.deleteJarForUser(currentUser.id, jarToDelete.id);
-      setJars(updatedJars);
-      setJarToDelete(null);
+      try {
+        const updatedJars = await dataService.deleteJarForUser(currentUser.id, jarToDelete.id);
+        setJars(updatedJars);
+        setJarToDelete(null);
+      } catch (error) {
+        alert("Failed to delete jar.");
+      }
     }
   };
 
-  const handleUpdateUser = (updatedUser: User) => {
-    const user = authService.updateUser(updatedUser);
+  const handleUpdateUser = async (updatedUser: User) => {
+    const user = await authService.updateUser(updatedUser);
     if (user) {
       setCurrentUser(user);
       alert('Profile updated successfully!');
@@ -119,7 +132,7 @@ const App: React.FC = () => {
     setSelectedJar(jar);
     setView('VIEW_JAR');
   };
-  
+
   const handleShareJar = (jar: JarType) => {
     setJarToShare(jar);
     setIsShareModalOpen(true);
@@ -133,12 +146,12 @@ const App: React.FC = () => {
       window.history.pushState({}, '', window.location.pathname);
     }
     if (appState === 'SHARED_VIEW') {
-        const user = authService.getCurrentUser();
-        if (user) {
-            handleUserLogin(user);
-        } else {
-            setAppState('LANDING');
-        }
+      const user = authService.getCurrentUser();
+      if (user) {
+        handleUserLogin(user);
+      } else {
+        setAppState('LANDING');
+      }
     }
   };
 
@@ -148,13 +161,13 @@ const App: React.FC = () => {
     }
     setView(targetView);
   };
-  
+
   const handleGoToCreate = () => {
     setJarToEdit(null);
     if (currentUser) {
-        setView('CREATE_JAR');
+      setView('CREATE_JAR');
     } else {
-        setAppState('GUEST_CREATING');
+      setAppState('GUEST_CREATING');
     }
   };
 
@@ -169,80 +182,80 @@ const App: React.FC = () => {
         return <CreateJar onSaveJar={handleSaveJar} onBack={handleBackToHome} jarToEdit={jarToEdit} currentUser={currentUser} />;
       case 'VIEW_JAR':
         if (selectedJar) {
-          return <JarView 
-                    jar={selectedJar} 
-                    onBack={handleBackToHome} 
-                    onShare={handleShareJar}
-                    isSharedView={false}
-                 />;
+          return <JarView
+            jar={selectedJar}
+            onBack={handleBackToHome}
+            onShare={handleShareJar}
+            isSharedView={false}
+          />;
         }
         handleBackToHome();
         return null;
       case 'HOME':
       default:
-        return <HomePage 
-            jars={jars} 
-            onSelectJar={handleSelectJar} 
-            onGoToCreate={() => { setJarToEdit(null); setView('CREATE_JAR'); }} 
-            onEditJar={handleEditJar}
-            onDeleteJar={confirmDeleteJar}
+        return <HomePage
+          jars={jars}
+          onSelectJar={handleSelectJar}
+          onGoToCreate={() => { setJarToEdit(null); setView('CREATE_JAR'); }}
+          onEditJar={handleEditJar}
+          onDeleteJar={confirmDeleteJar}
         />;
     }
   };
-  
+
   const renderPage = () => {
-    switch(appState) {
-        case 'LANDING':
-            return <LandingPage onEnter={() => setAppState('AUTH')} onGoToCreate={handleGoToCreate} />;
-        case 'AUTH':
-            return <AuthPage onAuthSuccess={handleUserLogin} />;
-        case 'SHARED_VIEW':
-            return selectedJar ? (
-                 <div className="min-h-screen">
-                    <Navbar user={null} onNavigate={() => {}} isSharedView={true} />
-                     <main className="pt-24">
-                        <JarView jar={selectedJar} onBack={handleBackToHome} onShare={() => {}} isSharedView={true} />
-                    </main>
-                 </div>
-            ) : null;
-        case 'GUEST_CREATING':
-            return (
-                <div className="min-h-screen">
-                     <header className="container mx-auto px-4 sm:px-6 lg:px-8 h-24 flex justify-between items-center">
-                        <VivlitLogo className="w-32 h-auto text-purple-800" />
-                    </header>
-                    <main>
-                         <CreateJar 
-                            onSaveJar={handleSaveJar} 
-                            onBack={() => setAppState('LANDING')} 
-                            jarToEdit={null} 
-                            currentUser={null}
-                        />
-                    </main>
-                </div>
-            )
-        case 'APP':
-             if (!currentUser) return <AuthPage onAuthSuccess={handleUserLogin} />;
-             return (
-                 <div className="min-h-screen">
-                    <Navbar user={currentUser} onNavigate={handleNavigate} isSharedView={false} />
-                    <main className="pt-24">
-                        {renderAppContent()}
-                    </main>
-                    {isShareModalOpen && jarToShare && (
-                        <ShareModal jar={jarToShare} onClose={() => setIsShareModalOpen(false)} />
-                    )}
-                    {jarToDelete && (
-                        <ConfirmationModal
-                        isOpen={!!jarToDelete}
-                        onClose={() => setJarToDelete(null)}
-                        onConfirm={handleDeleteJar}
-                        title="Delete Jar"
-                        message={`Are you sure you want to permanently delete the jar "${jarToDelete.name}"? This action cannot be undone.`}
-                        />
-                    )}
-                 </div>
-             );
+    switch (appState) {
+      case 'LANDING':
+        return <LandingPage onEnter={() => setAppState('AUTH')} onGoToCreate={handleGoToCreate} />;
+      case 'AUTH':
+        return <AuthPage onAuthSuccess={handleUserLogin} />;
+      case 'SHARED_VIEW':
+        return selectedJar ? (
+          <div className="min-h-screen">
+            <Navbar user={null} onNavigate={() => { }} isSharedView={true} />
+            <main className="pt-24">
+              <JarView jar={selectedJar} onBack={handleBackToHome} onShare={() => { }} isSharedView={true} />
+            </main>
+          </div>
+        ) : null;
+      case 'GUEST_CREATING':
+        return (
+          <div className="min-h-screen">
+            <header className="container mx-auto px-4 sm:px-6 lg:px-8 h-24 flex justify-between items-center">
+              <VivlitLogo className="w-32 h-auto text-purple-800" />
+            </header>
+            <main>
+              <CreateJar
+                onSaveJar={handleSaveJar}
+                onBack={() => setAppState('LANDING')}
+                jarToEdit={null}
+                currentUser={null}
+              />
+            </main>
+          </div>
+        )
+      case 'APP':
+        if (!currentUser) return <AuthPage onAuthSuccess={handleUserLogin} />;
+        return (
+          <div className="min-h-screen">
+            <Navbar user={currentUser} onNavigate={handleNavigate} isSharedView={false} />
+            <main className="pt-24">
+              {renderAppContent()}
+            </main>
+            {isShareModalOpen && jarToShare && (
+              <ShareModal jar={jarToShare} onClose={() => setIsShareModalOpen(false)} />
+            )}
+            {jarToDelete && (
+              <ConfirmationModal
+                isOpen={!!jarToDelete}
+                onClose={() => setJarToDelete(null)}
+                onConfirm={handleDeleteJar}
+                title="Delete Jar"
+                message={`Are you sure you want to permanently delete the jar "${jarToDelete.name}"? This action cannot be undone.`}
+              />
+            )}
+          </div>
+        );
     }
   }
 
