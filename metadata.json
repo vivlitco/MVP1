@@ -1,0 +1,7 @@
+{
+  "name": "Vivlit – Your Virtual Jar of Notes",
+  "description": "A whimsical, emotionally engaging application that allows users to create virtual jars to store and share personal notes, memories, and messages with someone special.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
