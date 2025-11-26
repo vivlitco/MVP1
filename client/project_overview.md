@@ -45,35 +45,22 @@
 
 ## 4. Code Structure
 
+The project is divided into two main directories:
+
+### 📂 /client
+Contains the React frontend application (moved from root).
+*   `App.tsx`: Main application controller.
+*   `/components`: UI components.
+*   `/services`: Frontend services (Auth, Data, Gemini).
+*   `vite.config.ts`, `postcss.config.js`, etc.
+
+### 📂 /server
+Contains the Node.js/Express backend.
+*   `index.js`: Entry point for the API server.
+
 ### 📂 Root Directory
-*   `App.tsx`: The main application controller. Handles global state, routing logic, and high-level layout.
-*   `types.ts`: TypeScript interfaces defining core data models (`Jar`, `Note`, `User`, `NoteType`).
-*   `vite.config.ts`: Vite configuration.
-*   `tsconfig.json`: TypeScript compiler configuration.
-
-### 📂 /components
-Contains all UI components:
-*   **Pages/Views**:
-    *   `HomePage.tsx`: Main dashboard for logged-in users.
-    *   `LandingPage.tsx`: Welcome screen for visitors.
-    *   `AuthPage.tsx`: Login/Signup forms.
-    *   `ProfilePage.tsx`: User profile settings.
-    *   `JarView.tsx`: Interface for viewing the contents of a jar.
-    *   `CreateJar.tsx`: Wizard/Form for building a new jar.
-*   **Widgets**:
-    *   `Navbar.tsx`: Top navigation bar.
-    *   `AudioRecorder.tsx`: Component for recording voice notes.
-    *   `NoteModal.tsx`: Modal for adding/editing notes.
-    *   `ShareModal.tsx`: UI for sharing a jar.
-    *   `ConfirmationModal.tsx`: Generic confirmation dialog.
-    *   `LoadingSpinner.tsx`: Visual loading indicator.
-    *   `icons.tsx`: SVG icon definitions.
-
-### 📂 /services
-Business logic and API interactions:
-*   `authService.ts`: Manages user sessions and authentication logic.
-*   `dataService.ts`: Handles CRUD operations for Jars and Notes (likely interacting with LocalStorage).
-*   `geminiService.ts`: Interface with Google's Gemini API for generating cover notes.
+*   `client/`: Frontend code.
+*   `server/`: Backend code.
 
 ## 5. Current Status & Recent Changes
 *   **Environment Configuration**: The project uses `import.meta.env` for Vite compatibility.
