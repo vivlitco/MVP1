@@ -1,4 +1,9 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+// 1. Import the dotenv loader (matching your std version)
+import { load } from "https://deno.land/std@0.190.0/dotenv/mod.ts";
+
+// 2. Load environment variables from .env file
+await load();
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
