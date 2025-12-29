@@ -1,65 +1,73 @@
-# Vivlit – Your Virtual Jar of Notes 🏺
+# Welcome to your Lovable project
 
-Vivlit is a digital space to create, customize, and share "virtual jars" filled with memories, messages, and media. It's designed to bring warmth and connection through a whimsical, personal interface.
+## Project info
 
-## 📂 Project Structure
+**URL**: https://lovable.dev/projects/d83ee42f-5437-4572-940b-1ad92299530a
 
-The project is organized into two main directories:
+## How can I edit this code?
 
-*   **`client/`**: The frontend application built with **React 19**, **Vite**, and **Tailwind CSS v4**. It handles the UI, user interactions, and AI generation features.
-*   **`server/`**: The backend API built with **Node.js** and **Express**. It currently serves as the foundation for future API endpoints.
+There are several ways of editing your application.
 
-## 🚀 Getting Started
+**Use Lovable**
 
-Follow these steps to set up the project locally.
+Simply visit the [Lovable Project](https://lovable.dev/projects/d83ee42f-5437-4572-940b-1ad92299530a) and start prompting.
 
-### Prerequisites
-*   [Node.js](https://nodejs.org/) (v18 or higher recommended)
-*   npm (comes with Node.js)
+Changes made via Lovable will be committed automatically to this repo.
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/vivlitco/MVP1.git
-cd MVP1
+**Use your preferred IDE**
+
+If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+
+The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+
+Follow these steps:
+
+```sh
+# Step 1: Clone the repository using the project's Git URL.
+git clone <YOUR_GIT_URL>
+
+# Step 2: Navigate to the project directory.
+cd <YOUR_PROJECT_NAME>
+
+# Step 3: Install the necessary dependencies.
+npm i
+
+# Step 4: Start the development server with auto-reloading and an instant preview.
+npm run dev
 ```
 
-### 2. Setup Frontend (Client)
-The client requires an API key for Google Gemini to generate cover notes.
+**Edit a file directly in GitHub**
 
-1.  Navigate to the client folder:
-    ```bash
-    cd client
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
-3.  **Environment Setup**:
-    Create a `.env` file in the `client` directory and add your Gemini API Key:
-    ```env
-    VITE_API_KEY="your_google_gemini_api_key_here"
-    ```
-4.  Run the development server:
-    ```bash
-    npm run dev
-    ```
-    The app should now be running at `http://localhost:5173`.
+- Navigate to the desired file(s).
+- Click the "Edit" button (pencil icon) at the top right of the file view.
+- Make your changes and commit the changes.
 
-### 3. Setup Backend (Server)
-1.  Open a new terminal and navigate to the server folder:
-    ```bash
-    cd server
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
-3.  Start the server:
-    ```bash
-    node index.js
-    ```
-    The server will start on port **8000** (or the port defined in your environment variables).
+**Use GitHub Codespaces**
 
-## 🛠️ Tech Stack
-*   **Frontend**: React, TypeScript, Vite, Tailwind CSS, Google GenAI SDK
-*   **Backend**: Node.js, Express
+- Navigate to the main page of your repository.
+- Click on the "Code" button (green button) near the top right.
+- Select the "Codespaces" tab.
+- Click on "New codespace" to launch a new Codespace environment.
+- Edit files directly within the Codespace and commit and push your changes once you're done.
+
+## What technologies are used for this project?
+
+This project is built with:
+
+- Vite
+- TypeScript
+- React
+- shadcn-ui
+- Tailwind CSS
+
+## How can I deploy this project?
+
+Simply open [Lovable](https://lovable.dev/projects/d83ee42f-5437-4572-940b-1ad92299530a) and click on Share -> Publish.
+
+## Can I connect a custom domain to my Lovable project?
+
+Yes, you can!
+
+To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+
+Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
