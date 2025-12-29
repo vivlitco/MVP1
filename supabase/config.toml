@@ -1,0 +1,4 @@
+project_id = "xkoshoaigdljkeypeslr"
+
+[functions.send-jar-email]
+verify_jwt = false
