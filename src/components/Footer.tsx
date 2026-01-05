@@ -99,7 +99,7 @@ const Footer = () => {
           <p className="text-muted-foreground flex items-center justify-center gap-2">
             Made with
             <Heart className="w-4 h-4 text-accent fill-accent animate-pulse" />
-            by Team Vivlit © 2025
+            by Team Vivlit © 2026
           </p>
         </div>
       </div>

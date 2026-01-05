@@ -131,9 +131,12 @@ const EditJar = () => {
         is_password_protected: enablePassword,
       };
       
-      // Only update password if a new one is provided
+      // Only update password if a new one is provided - use secure hashing
       if (enablePassword && password) {
-        updateData.password_hash = btoa(password);
+        const { data: hashResult, error: hashError } = await supabase
+          .rpc('hash_jar_password', { p_password: password });
+        if (hashError) throw hashError;
+        updateData.password_hash = hashResult;
       } else if (!enablePassword) {
         updateData.password_hash = null;
       }

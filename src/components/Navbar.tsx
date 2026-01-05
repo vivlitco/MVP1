@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Heart, LogOut, User } from 'lucide-react';
+import { LogOut, User, Heart } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,11 +29,8 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 group">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center group-hover:scale-110 transition-transform">
-            <Heart className="w-5 h-5 text-primary-foreground" fill="currentColor" />
-          </div>
-          <span className="font-heading text-xl font-bold text-foreground">Vivlit</span>
+        <Link to="/" className="group">
+          <span className="font-script text-3xl font-bold text-primary group-hover:scale-105 transition-transform inline-block">Vivlit</span>
         </Link>
 
         <div className="flex items-center gap-4">

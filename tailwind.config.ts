@@ -16,6 +16,7 @@ export default {
       fontFamily: {
         heading: ['"Playfair Display"', 'serif'],
         body: ['Poppins', 'sans-serif'],
+        script: ['"Dancing Script"', 'cursive'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -39,6 +40,10 @@ export default {
         mint: {
           DEFAULT: "hsl(var(--mint))",
           foreground: "hsl(var(--mint-foreground))",
+        },
+        gold: {
+          DEFAULT: "hsl(var(--gold))",
+          foreground: "hsl(var(--gold-foreground))",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
@@ -66,11 +71,15 @@ export default {
         soft: "var(--shadow-soft)",
         float: "var(--shadow-float)",
         glow: "var(--shadow-glow)",
+        paper: "var(--shadow-paper)",
+        dreamy: "var(--shadow-dreamy)",
       },
       backgroundImage: {
         'gradient-primary': 'var(--gradient-primary)',
         'gradient-secondary': 'var(--gradient-secondary)',
         'gradient-soft': 'var(--gradient-soft)',
+        'gradient-storybook': 'var(--gradient-storybook)',
+        'gradient-magic': 'var(--gradient-magic)',
       },
       keyframes: {
         "accordion-down": {

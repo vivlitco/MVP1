@@ -46,34 +46,30 @@ const ShareDialog = ({ jarId, jarName, shareToken, children }: ShareDialogProps)
       return;
     }
 
+    if (!user) {
+      toast.error('You must be logged in to send emails');
+      return;
+    }
+
     setSendingEmail(true);
     try {
-      const { error } = await supabase.functions.invoke('send-jar-email', {
+      const { data, error } = await supabase.functions.invoke('send-jar-email', {
         body: {
           recipientEmail,
           senderName: senderName || 'Someone special',
           personalMessage,
-          jarName,
-          shareUrl,
+          jarId, // Send jarId instead of shareUrl - the function builds the URL securely
         },
       });
 
       if (error) throw error;
-      
-      // Log activity
-      await supabase.from('jar_activity').insert({
-        jar_id: jarId,
-        user_id: user?.id,
-        activity_type: 'shared',
-        metadata: { method: 'email', recipient: recipientEmail },
-      });
 
       toast.success('Email sent successfully!');
       setRecipientEmail('');
       setPersonalMessage('');
     } catch (error: any) {
       console.error('Failed to send email:', error);
-      toast.error('Failed to send email. Please make sure email is configured.');
+      toast.error(error?.message || 'Failed to send email. Please try again.');
     } finally {
       setSendingEmail(false);
     }

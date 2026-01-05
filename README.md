@@ -1,6 +1,8 @@
-# Vivlit - A Jar of Notes App
+# Vivlit - Light Up Moments That Matter ✨
 
-Vivlit is a web application for creating and sharing personalized jars of notes with loved ones. Craft heartfelt messages, add decorative charms, and share them with special people in your life.
+Vivlit is a modern web application for creating and sharing personalized jars of notes. Express emotions and celebrate memories through customizable digital gifting experiences.
+
+**Website**: https://vivlit.com
 
 ## How can I edit this code?
 
@@ -8,7 +10,7 @@ There are several ways of editing your application.
 
 **Use your preferred IDE**
 
-If you want to work locally using your own IDE, you can clone this repo and push changes.
+If you want to work locally using your own IDE, clone the repo and start developing locally.
 
 The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
@@ -54,4 +56,23 @@ This project is built with:
 
 ## How can I deploy this project?
 
-You can deploy this project to various platforms like Vercel, Netlify, or your own server. Build the project using `npm run build` and deploy the `dist` folder to your hosting provider.
+Vivlit is configured to deploy on Render.com with the custom domain vivlit.com.
+
+### Deployment Steps:
+
+1. Connect your GitHub repository to Render
+2. Create a new Web Service and select this repository
+3. Configure environment variables (see .env.example)
+4. Set build command: `npm run build`
+5. Set start command: `npm run preview` or configure for production
+6. Connect your vivlit.com domain in Render dashboard
+
+### Custom Domain Setup:
+
+1. In Render dashboard, go to your service settings
+2. Navigate to "Custom Domains" section
+3. Add your domain: `vivlit.com`
+4. Update your domain DNS records with Render's nameservers
+5. Verify domain ownership
+
+For more details, see the deployment configuration in your environment variables.

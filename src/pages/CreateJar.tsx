@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { useGhostSession } from '@/hooks/useGhostSession';
 import Navbar from '@/components/Navbar';
@@ -9,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { fireConfetti, fireSparkles, fireHearts } from '@/lib/confetti';
+import MagicSparkles from '@/components/ui/MagicSparkles';
 
 import { NoteEditor, NoteItem } from '@/components/workspace/NoteEditor';
 import { CharmsPalette, CharmItem } from '@/components/workspace/CharmsPalette';
@@ -144,13 +146,22 @@ const CreateJar = () => {
       }
 
       // Create the jar
+      // Hash password securely using database function if password is enabled
+      let passwordHash = null;
+      if (enablePassword && password) {
+        const { data: hashResult, error: hashError } = await supabase
+          .rpc('hash_jar_password', { p_password: password });
+        if (hashError) throw hashError;
+        passwordHash = hashResult;
+      }
+
       const jarData: any = {
         name: jarName || 'My Jar of Notes',
         theme,
         recipient_name: recipientName || null,
         open_mode: openMode,
         is_password_protected: enablePassword,
-        password_hash: enablePassword ? btoa(password) : null,
+        password_hash: passwordHash,
       };
 
       if (user) {
@@ -250,27 +261,62 @@ const CreateJar = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Dreamy background */}
+      <div 
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          background: 'linear-gradient(180deg, hsl(300, 35%, 97%) 0%, hsl(330, 35%, 96%) 50%, hsl(280, 30%, 96%) 100%)'
+        }}
+      />
+      
+      {/* Magical sparkles */}
+      <MagicSparkles count={15} />
+      
       <Navbar />
       
-      <main className="pt-20 pb-8 px-4">
+      <main className="pt-20 pb-8 px-4 relative z-10">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="text-center mb-6">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 mb-4">
-              <Sparkles className="w-4 h-4 text-primary" />
+          <motion.div 
+            className="text-center mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <motion.div 
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full glass-warm mb-4"
+              whileHover={{ scale: 1.05, boxShadow: '0 0 30px hsl(43, 80%, 70% / 0.3)' }}
+            >
+              <motion.div
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <Sparkles className="w-4 h-4 text-primary" />
+              </motion.div>
               <span className="text-sm font-medium">Jar Workshop</span>
-              <Heart className="w-4 h-4 text-accent" fill="currentColor" />
-            </div>
-            <h1 className="font-heading text-3xl md:text-4xl font-bold text-foreground">
-              Create Your Jar of Love
+              <motion.div
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              >
+                <Heart className="w-4 h-4 text-primary fill-primary/30" />
+              </motion.div>
+            </motion.div>
+            <h1 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
+              Create Your{' '}
+              <span className="font-script gradient-text-gold text-4xl md:text-5xl lg:text-6xl">Jar of Love</span>
             </h1>
             {isGhost && (
-              <p className="text-sm text-muted-foreground mt-2">
-                Creating as guest — sign up anytime to save permanently!
-              </p>
+              <motion.p 
+                className="text-sm text-muted-foreground mt-3"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+              >
+                ✨ Creating as guest — sign up anytime to save permanently!
+              </motion.p>
             )}
-          </div>
+          </motion.div>
 
           {/* Workspace layout */}
           <div className="grid lg:grid-cols-[320px_1fr_280px] gap-4 lg:gap-6">

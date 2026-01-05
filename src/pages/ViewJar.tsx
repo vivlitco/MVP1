@@ -17,12 +17,11 @@ interface Jar {
   id: string;
   name: string;
   theme: string;
-  recipient_name: string | null;
   share_token: string;
   open_mode: string;
   user_id: string;
   password_hash: string | null;
-  is_password_protected: boolean;
+  is_password_protected: boolean | null;
 }
 
 interface JarNote {
@@ -89,9 +88,10 @@ const ViewJar = () => {
     if (!token) return;
 
     try {
+      // Only select non-sensitive fields - exclude recipient_email, recipient_name, ghost_session_id
       const { data: jarData, error: jarError } = await supabase
         .from('jars')
-        .select('*')
+        .select('id, name, theme, share_token, open_mode, user_id, password_hash, is_password_protected, created_at, updated_at')
         .eq('share_token', token)
         .maybeSingle();
 
@@ -276,9 +276,20 @@ const ViewJar = () => {
   const handlePasswordSubmit = async () => {
     if (!jar) return;
     
-    const encodedInput = btoa(passwordInput);
+    // Use secure password verification via database function
+    const { data: isValid, error: verifyError } = await supabase
+      .rpc('verify_jar_password', { 
+        p_password: passwordInput, 
+        p_hash: jar.password_hash 
+      });
     
-    if (encodedInput === jar.password_hash) {
+    if (verifyError) {
+      setPasswordError('Error verifying password');
+      console.error('Password verification error:', verifyError);
+      return;
+    }
+    
+    if (isValid) {
       setIsLocked(false);
       setPasswordError('');
       await Promise.all([
@@ -433,13 +444,29 @@ const ViewJar = () => {
         );
       
       case 'link':
+        // Validate URL to prevent XSS via javascript: or data: URLs
+        const isValidHttpUrl = (url: string): boolean => {
+          try {
+            const parsed = new URL(url);
+            return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+          } catch {
+            return false;
+          }
+        };
+        const safeUrl = isValidHttpUrl(note.content) ? note.content : '#';
         return (
           <div className="space-y-4">
             <a 
-              href={note.content}
+              href={safeUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 p-4 bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors"
+              onClick={(e) => {
+                if (!isValidHttpUrl(note.content)) {
+                  e.preventDefault();
+                  toast.error('This link is invalid or unsafe');
+                }
+              }}
             >
               <Link2 className="w-5 h-5 text-primary" />
               <span className="text-primary underline break-all">{note.content}</span>
@@ -492,9 +519,6 @@ const ViewJar = () => {
             </div>
             
             <h2 className="font-heading text-2xl font-semibold mb-2">{jar.name}</h2>
-            {jar.recipient_name && (
-              <p className="text-muted-foreground mb-2">For {jar.recipient_name}</p>
-            )}
             
             <p className="text-sm text-muted-foreground mb-6">
               Someone special shared a jar of notes with you! 
@@ -531,9 +555,6 @@ const ViewJar = () => {
             </div>
             
             <h2 className="font-heading text-2xl font-semibold mb-2">{jar.name}</h2>
-            {jar.recipient_name && (
-              <p className="text-muted-foreground mb-6">For {jar.recipient_name}</p>
-            )}
             
             <p className="text-sm text-muted-foreground mb-6">
               This jar is password protected. Enter the password to view.
@@ -613,11 +634,6 @@ const ViewJar = () => {
           <h1 className="font-heading text-2xl md:text-3xl font-bold text-foreground mb-2">
             {jar.name}
           </h1>
-          {jar.recipient_name && (
-            <p className="text-foreground/80">
-              For {jar.recipient_name}
-            </p>
-          )}
           {jar.is_password_protected && (
             <div className="flex items-center justify-center gap-1 mt-2 text-xs text-foreground/60">
               <Lock className="w-3 h-3" />

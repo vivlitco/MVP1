@@ -1,11 +1,9 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-// 1. Import the dotenv loader (matching your std version)
-import { load } from "https://deno.land/std@0.190.0/dotenv/mod.ts";
-
-// 2. Load environment variables from .env file
-await load();
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,8 +15,25 @@ interface JarEmailRequest {
   recipientEmail: string;
   senderName: string;
   personalMessage?: string;
-  jarName: string;
-  shareUrl: string;
+  jarId: string;
+}
+
+// HTML escape function to prevent XSS/injection attacks
+function escapeHtml(text: string): string {
+  const htmlEscapes: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  };
+  return text.replace(/[&<>"']/g, (char) => htmlEscapes[char] || char);
+}
+
+// Validate email format
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email) && email.length <= 255;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -32,7 +47,114 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("RESEND_API_KEY is not configured");
     }
 
-    const { recipientEmail, senderName, personalMessage, jarName, shareUrl }: JarEmailRequest = await req.json();
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+      throw new Error("Supabase configuration is missing");
+    }
+
+    // Extract and verify authentication
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Authorization header required" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Create Supabase client with user's auth token
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: {
+        headers: { Authorization: authHeader },
+      },
+    });
+
+    // Verify user is authenticated
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      console.error("Auth error:", authError);
+      return new Response(
+        JSON.stringify({ error: "Invalid or expired authentication token" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    const { recipientEmail, senderName, personalMessage, jarId }: JarEmailRequest = await req.json();
+
+    // Input validation
+    if (!recipientEmail || !isValidEmail(recipientEmail)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid recipient email address" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    if (!jarId) {
+      return new Response(
+        JSON.stringify({ error: "Jar ID is required" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    if (!senderName || senderName.length > 100) {
+      return new Response(
+        JSON.stringify({ error: "Sender name is required and must be under 100 characters" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    if (personalMessage && personalMessage.length > 500) {
+      return new Response(
+        JSON.stringify({ error: "Personal message must be under 500 characters" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Verify the user owns or has access to this jar
+    const { data: jar, error: jarError } = await supabase
+      .from("jars")
+      .select("id, name, share_token, user_id")
+      .eq("id", jarId)
+      .maybeSingle();
+
+    if (jarError) {
+      console.error("Jar fetch error:", jarError);
+      return new Response(
+        JSON.stringify({ error: "Error fetching jar information" }),
+        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    if (!jar) {
+      return new Response(
+        JSON.stringify({ error: "Jar not found" }),
+        { status: 404, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Verify the authenticated user owns this jar or is a co-owner
+    if (jar.user_id !== user.id) {
+      const { data: ownership } = await supabase
+        .from("jar_owners")
+        .select("id")
+        .eq("jar_id", jarId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (!ownership) {
+        return new Response(
+          JSON.stringify({ error: "You do not have permission to share this jar" }),
+          { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+    }
+
+    // Build the secure share URL using the jar's share_token
+    const baseUrl = req.headers.get("origin") || "https://vivlit.app";
+    const shareUrl = `${baseUrl}/jar/${jar.share_token}`;
+
+    // Escape all user inputs to prevent HTML/script injection
+    const safeSenderName = escapeHtml(senderName.trim());
+    const safeJarName = escapeHtml(jar.name);
+    const safePersonalMessage = personalMessage ? escapeHtml(personalMessage.trim()) : null;
 
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -41,9 +163,9 @@ const handler = async (req: Request): Promise<Response> => {
         "Authorization": `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Vivlit <onboarding@resend.dev>",
+        from: "Vivlit <noreply@vivlit.com>",
         to: [recipientEmail],
-        subject: `${senderName} shared a jar of notes with you! 🎁`,
+        subject: `${safeSenderName} shared a jar of notes with you! 🎁`,
         html: `
           <!DOCTYPE html>
           <html>
@@ -59,17 +181,17 @@ const handler = async (req: Request): Promise<Response> => {
               
               <div style="background: white; padding: 40px; border-radius: 0 0 20px 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
                 <p style="font-size: 18px; color: #1f2937; margin: 0 0 20px;">
-                  <strong>${senderName}</strong> has created a special jar of notes just for you!
+                  <strong>${safeSenderName}</strong> has created a special jar of notes just for you!
                 </p>
                 
-                ${personalMessage ? `
+                ${safePersonalMessage ? `
                   <div style="background: #faf5ff; padding: 20px; border-radius: 12px; margin-bottom: 24px; border-left: 4px solid #c084fc;">
-                    <p style="color: #6b21a8; font-style: italic; margin: 0;">"${personalMessage}"</p>
+                    <p style="color: #6b21a8; font-style: italic; margin: 0;">"${safePersonalMessage}"</p>
                   </div>
                 ` : ''}
                 
                 <p style="font-size: 16px; color: #4b5563; margin-bottom: 30px;">
-                  This jar called "<strong>${jarName}</strong>" is filled with heartfelt messages waiting to be discovered. Open it and let the surprises unfold! ✨
+                  This jar called "<strong>${safeJarName}</strong>" is filled with heartfelt messages waiting to be discovered. Open it and let the surprises unfold! ✨
                 </p>
                 
                 <div style="text-align: center;">
@@ -95,9 +217,17 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error(emailResponse.message || "Failed to send email");
     }
 
-    console.log("Email sent successfully:", emailResponse);
+    console.log("Email sent successfully by user:", user.id, "to:", recipientEmail, "for jar:", jarId);
 
-    return new Response(JSON.stringify(emailResponse), {
+    // Log the email activity
+    await supabase.from("jar_activity").insert({
+      jar_id: jarId,
+      user_id: user.id,
+      activity_type: "email_shared",
+      metadata: { recipient_email: recipientEmail },
+    });
+
+    return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
@@ -107,7 +237,7 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("Error in send-jar-email function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Failed to send email" }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

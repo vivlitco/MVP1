@@ -86,10 +86,27 @@ export const NoteEditor = ({ onAddNote }: NoteEditorProps) => {
         theme: selectedTheme,
       });
       clearFile();
-    } else if ((noteType === 'text' || noteType === 'link') && content.trim()) {
+    } else if (noteType === 'link' && content.trim()) {
+      // Validate URL before adding - only allow http/https
+      try {
+        const url = new URL(content.trim());
+        if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+          return; // Reject non-http(s) URLs silently (button will be disabled)
+        }
+      } catch {
+        return; // Invalid URL
+      }
       onAddNote({
         id: crypto.randomUUID(),
-        type: noteType,
+        type: 'link',
+        content: content.trim(),
+        theme: selectedTheme,
+      });
+      setContent('');
+    } else if (noteType === 'text' && content.trim()) {
+      onAddNote({
+        id: crypto.randomUUID(),
+        type: 'text',
         content: content.trim(),
         theme: selectedTheme,
       });
@@ -100,6 +117,15 @@ export const NoteEditor = ({ onAddNote }: NoteEditorProps) => {
   const canAdd = () => {
     if (noteType === 'voice') return !!audioBlob;
     if (noteType === 'image') return !!file;
+    if (noteType === 'link') {
+      // Only enable button for valid http/https URLs
+      try {
+        const url = new URL(content.trim());
+        return url.protocol === 'http:' || url.protocol === 'https:';
+      } catch {
+        return false;
+      }
+    }
     return content.trim().length > 0;
   };
 

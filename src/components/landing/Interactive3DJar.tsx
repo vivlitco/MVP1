@@ -1,511 +1,509 @@
-import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { useRef, useState, useEffect, useMemo } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Environment, Float, OrbitControls, Text } from '@react-three/drei';
+import * as THREE from 'three';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Interactive3DJarProps {
   onInteraction?: (isInteracting: boolean) => void;
 }
 
-// Folded note component - abstract, no text visible
+// Folded paper note inside the jar with physics-like motion
 const FoldedNote = ({ 
-  index, 
+  position, 
+  rotation, 
+  color, 
+  scale = 1,
   isShaking,
-  baseDelay 
+  jarRotation
 }: { 
-  index: number; 
+  position: [number, number, number]; 
+  rotation: [number, number, number]; 
+  color: string;
+  scale?: number;
   isShaking: boolean;
-  baseDelay: number;
+  jarRotation: { x: number; y: number };
 }) => {
-  const colors = [
-    'from-amber-200 to-amber-300',
-    'from-rose-200 to-rose-300', 
-    'from-violet-200 to-violet-300',
-    'from-emerald-200 to-emerald-300',
-    'from-sky-200 to-sky-300',
-  ];
+  const meshRef = useRef<THREE.Mesh>(null);
+  const velocityRef = useRef({ x: 0, y: 0, z: 0, rotZ: 0 });
+  const currentPosRef = useRef({ x: position[0], y: position[1], z: position[2] });
+  const randomOffset = useMemo(() => Math.random() * Math.PI * 2, []);
+  const mass = useMemo(() => 0.5 + Math.random() * 0.5, []); // Random mass for varied response
   
-  const color = colors[index % colors.length];
-  
-  // Each note has unique position within jar bounds
-  const positions = [
-    { x: 35, y: 55, rotation: -15, scale: 0.9 },
-    { x: 55, y: 45, rotation: 12, scale: 0.85 },
-    { x: 45, y: 65, rotation: -8, scale: 0.95 },
-    { x: 30, y: 40, rotation: 20, scale: 0.8 },
-    { x: 60, y: 58, rotation: -22, scale: 0.88 },
-  ];
-  
-  const pos = positions[index % positions.length];
-  
+  useFrame((state) => {
+    if (!meshRef.current) return;
+    const time = state.clock.elapsedTime;
+    
+    // Physics constants
+    const gravity = 0.008;
+    const friction = 0.92;
+    const rotationInfluence = 0.15;
+    
+    // Calculate forces from jar rotation
+    const forceX = jarRotation.y * rotationInfluence / mass;
+    const forceZ = -jarRotation.x * rotationInfluence / mass;
+    
+    // Apply forces to velocity
+    velocityRef.current.x += forceX;
+    velocityRef.current.z += forceZ;
+    velocityRef.current.rotZ += jarRotation.y * 0.02;
+    
+    // Apply friction
+    velocityRef.current.x *= friction;
+    velocityRef.current.z *= friction;
+    velocityRef.current.rotZ *= friction;
+    
+    // Update position with constraints (keep notes inside jar)
+    const maxOffset = 0.25;
+    currentPosRef.current.x = Math.max(-maxOffset, Math.min(maxOffset, 
+      position[0] + velocityRef.current.x
+    ));
+    currentPosRef.current.z = Math.max(-maxOffset, Math.min(maxOffset, 
+      position[2] + velocityRef.current.z
+    ));
+    
+    if (isShaking) {
+      meshRef.current.position.x = currentPosRef.current.x + Math.sin(time * 20 + randomOffset) * 0.08;
+      meshRef.current.position.y = position[1] + Math.cos(time * 15 + randomOffset) * 0.08;
+      meshRef.current.position.z = currentPosRef.current.z + Math.sin(time * 18 + randomOffset) * 0.06;
+      meshRef.current.rotation.z = rotation[2] + Math.sin(time * 25) * 0.3;
+      meshRef.current.rotation.x = rotation[0] + Math.cos(time * 22) * 0.2;
+    } else {
+      // Gentle floating + physics response
+      meshRef.current.position.x = currentPosRef.current.x;
+      meshRef.current.position.y = position[1] + Math.sin(time * 0.8 + randomOffset) * 0.02;
+      meshRef.current.position.z = currentPosRef.current.z;
+      meshRef.current.rotation.z = rotation[2] + velocityRef.current.rotZ + Math.sin(time * 0.5 + randomOffset) * 0.03;
+    }
+  });
+
   return (
-    <motion.div
-      className="absolute pointer-events-none"
-      style={{
-        left: `${pos.x}%`,
-        top: `${pos.y}%`,
-        transform: `translate(-50%, -50%)`,
-      }}
-      animate={isShaking ? {
-        x: [0, -8, 8, -5, 5, 0],
-        y: [0, -6, 4, -4, 6, 0],
-        rotate: [pos.rotation, pos.rotation - 15, pos.rotation + 15, pos.rotation],
-      } : {
-        y: [0, -4, 0],
-        rotate: [pos.rotation - 2, pos.rotation + 2, pos.rotation - 2],
-      }}
-      transition={isShaking ? {
-        duration: 0.4,
-        repeat: Infinity,
-        delay: baseDelay + index * 0.05,
-      } : {
-        duration: 3 + index * 0.5,
-        repeat: Infinity,
-        ease: "easeInOut",
-        delay: baseDelay,
-      }}
-    >
-      {/* Folded paper shape - no text, just abstract form */}
-      <div 
-        className={`relative bg-gradient-to-br ${color} rounded-sm shadow-md`}
-        style={{
-          width: `${20 * pos.scale}px`,
-          height: `${14 * pos.scale}px`,
-          transform: `rotate(${pos.rotation}deg)`,
-        }}
+    <mesh ref={meshRef} position={position} rotation={rotation} scale={scale}>
+      <boxGeometry args={[0.42, 0.08, 0.28]} />
+      <meshStandardMaterial 
+        color={color} 
+        roughness={0.35}
+        metalness={0}
+        emissive={color}
+        emissiveIntensity={0.45}
+      />
+    </mesh>
+  );
+};
+
+// Glass Jar with realistic mason jar shape
+const GlassJar = ({
+  isHovered,
+  isClicked,
+  showNote,
+  onHover,
+  onClick,
+  onRotationChange
+}: { 
+  isHovered: boolean;
+  isClicked: boolean;
+  showNote: boolean;
+  onHover: (hovered: boolean) => void;
+  onClick: () => void;
+  onRotationChange: (rotation: { x: number; y: number }) => void;
+}) => {
+  const jarRef = useRef<THREE.Group>(null!);
+  const capRef = useRef<THREE.Group>(null!);
+  const mouseX = useRef(0);
+  const mouseY = useRef(0);
+  const targetRotationX = useRef(0);
+  const targetRotationY = useRef(0);
+  const currentRotation = useRef({ x: 0, y: 0 });
+  const [jarRotation, setJarRotation] = useState({ x: 0, y: 0 });
+  
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseX.current = (e.clientX / window.innerWidth - 0.5) * 2;
+      mouseY.current = (e.clientY / window.innerHeight - 0.5) * 2;
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+  
+  // Create classic mason jar shape matching reference
+  const jarGeometry = useMemo(() => {
+    const points: THREE.Vector2[] = [];
+    
+    const radius = 1.0;
+    const cornerRadius = 0.35;
+    
+    // A. Floor (center to start of curve)
+    points.push(new THREE.Vector2(0, 0));
+    points.push(new THREE.Vector2(radius - cornerRadius, 0));
+    
+    // B. Rounded bottom corner
+    const segments = 10;
+    for (let i = 1; i <= segments; i++) {
+      const theta = (i / segments) * (Math.PI / 2);
+      const x = (radius - cornerRadius) + (Math.sin(theta) * cornerRadius);
+      const y = (1 - Math.cos(theta)) * cornerRadius;
+      points.push(new THREE.Vector2(x, y));
+    }
+    
+    // C. Vertical wall up to neck
+    points.push(new THREE.Vector2(radius, 1.7));
+    
+    // D. Neck & rim
+    points.push(new THREE.Vector2(0.8, 2.0));  // Neck tapering in
+    points.push(new THREE.Vector2(0.8, 2.35)); // Neck straight up
+    points.push(new THREE.Vector2(0.93, 2.35)); // Rim flaring out
+    points.push(new THREE.Vector2(0.93, 2.15)); // Rim lip going down
+    points.push(new THREE.Vector2(0.73, 2.15)); // Inside neck finish
+    
+    const geometry = new THREE.LatheGeometry(points, 64);
+    geometry.translate(0, -1.15, 0);
+    return geometry;
+  }, []);
+
+  useFrame((state) => {
+    if (!jarRef.current || !capRef.current) return;
+    const time = state.clock.elapsedTime;
+    
+    const prevRotY = jarRef.current.rotation.y;
+    const prevRotX = jarRef.current.rotation.x;
+    
+    if (isHovered) {
+      targetRotationY.current = mouseX.current * 0.25;
+      targetRotationX.current = mouseY.current * 0.12;
+    } else {
+      targetRotationY.current = Math.sin(time * 0.4) * 0.06;
+      targetRotationX.current = Math.sin(time * 0.25) * 0.02;
+    }
+    
+    if (isClicked) {
+      targetRotationY.current += Math.sin(time * 18) * 0.08;
+      targetRotationX.current += Math.cos(time * 14) * 0.04;
+    }
+    
+    jarRef.current.rotation.y += (targetRotationY.current - jarRef.current.rotation.y) * 0.06;
+    jarRef.current.rotation.x += (targetRotationX.current - jarRef.current.rotation.x) * 0.06;
+    jarRef.current.position.y = Math.sin(time * 0.6) * 0.04;
+    
+    // Calculate rotation delta for physics
+    const deltaRotY = jarRef.current.rotation.y - prevRotY;
+    const deltaRotX = jarRef.current.rotation.x - prevRotX;
+    currentRotation.current = { x: deltaRotX * 10, y: deltaRotY * 10 };
+    setJarRotation(currentRotation.current);
+    
+    const targetY = showNote ? 1.55 : isClicked ? 1.45 : isHovered ? 1.32 : 1.22;
+    const targetRotXCap = showNote ? -0.2 : isClicked ? -0.15 : isHovered ? -0.05 : 0;
+    capRef.current.position.y += (targetY - capRef.current.position.y) * 0.08;
+    capRef.current.rotation.x += (targetRotXCap - capRef.current.rotation.x) * 0.08;
+  });
+
+  // More vibrant notes - filling the jar
+  const notes = useMemo(() => [
+    // Bottom layer (densely packed)
+    { position: [0.22, -0.78, 0.18] as [number, number, number], rotation: [0.1, 0.3, 0.2] as [number, number, number], color: '#ec4899', scale: 1.0 },
+    { position: [-0.25, -0.75, 0.12] as [number, number, number], rotation: [-0.15, -0.2, -0.25] as [number, number, number], color: '#a855f7', scale: 0.95 },
+    { position: [0.0, -0.72, -0.2] as [number, number, number], rotation: [0.08, 0.5, 0.15] as [number, number, number], color: '#f472b6', scale: 0.9 },
+    { position: [-0.18, -0.7, -0.1] as [number, number, number], rotation: [0.2, -0.4, 0.1] as [number, number, number], color: '#d946ef', scale: 0.88 },
+    { position: [0.15, -0.68, -0.08] as [number, number, number], rotation: [-0.1, 0.6, -0.2] as [number, number, number], color: '#fb7185', scale: 0.92 },
+    // Lower-middle layer
+    { position: [-0.12, -0.55, 0.22] as [number, number, number], rotation: [-0.1, 0.2, -0.3] as [number, number, number], color: '#c084fc', scale: 1.0 },
+    { position: [0.28, -0.52, 0.05] as [number, number, number], rotation: [0.15, -0.3, 0.35] as [number, number, number], color: '#f9a8d4', scale: 0.95 },
+    { position: [0.0, -0.48, 0.2] as [number, number, number], rotation: [-0.05, 0.4, -0.15] as [number, number, number], color: '#e879f9', scale: 0.88 },
+    { position: [-0.25, -0.45, 0.0] as [number, number, number], rotation: [0.12, -0.15, 0.28] as [number, number, number], color: '#a78bfa', scale: 0.9 },
+    { position: [0.2, -0.42, -0.15] as [number, number, number], rotation: [-0.08, 0.35, -0.12] as [number, number, number], color: '#ec4899', scale: 0.85 },
+    // Upper-middle layer
+    { position: [0.15, -0.32, 0.15] as [number, number, number], rotation: [0.12, 0.15, 0.25] as [number, number, number], color: '#d946ef', scale: 0.92 },
+    { position: [-0.22, -0.28, 0.1] as [number, number, number], rotation: [-0.08, -0.25, -0.2] as [number, number, number], color: '#fb7185', scale: 0.88 },
+    { position: [0.05, -0.25, 0.22] as [number, number, number], rotation: [0.1, 0.35, 0.1] as [number, number, number], color: '#a78bfa', scale: 0.85 },
+    { position: [-0.1, -0.22, -0.12] as [number, number, number], rotation: [-0.15, -0.4, 0.18] as [number, number, number], color: '#f472b6', scale: 0.9 },
+    // Top layer
+    { position: [0.12, -0.1, 0.08] as [number, number, number], rotation: [0.05, 0.2, -0.15] as [number, number, number], color: '#c084fc', scale: 0.82 },
+    { position: [-0.15, -0.05, 0.15] as [number, number, number], rotation: [-0.12, -0.18, 0.22] as [number, number, number], color: '#e879f9', scale: 0.78 },
+    { position: [0.0, 0.0, 0.05] as [number, number, number], rotation: [0.08, 0.3, 0.08] as [number, number, number], color: '#f9a8d4', scale: 0.75 },
+  ], []);
+
+  return (
+    <group ref={jarRef}>
+      {/* Glass jar body - realistic clear glass */}
+      <mesh 
+        geometry={jarGeometry}
+        onPointerEnter={() => onHover(true)}
+        onPointerLeave={() => onHover(false)}
+        onClick={onClick}
       >
-        {/* Paper fold corner */}
-        <div 
-          className="absolute top-0 right-0 bg-white/40"
-          style={{
-            width: `${6 * pos.scale}px`,
-            height: `${6 * pos.scale}px`,
-            clipPath: 'polygon(100% 0, 0 0, 100% 100%)',
-          }}
+        <meshPhysicalMaterial
+          color="#ffffff"
+          metalness={0}
+          roughness={0.02}
+          transmission={0.95}
+          thickness={0.8}
+          side={THREE.DoubleSide}
+          clearcoat={1}
+          clearcoatRoughness={0.05}
+          ior={1.52}
+          envMapIntensity={1.2}
+          transparent
+          opacity={0.35}
         />
-        {/* Subtle shadow for depth */}
-        <div 
-          className="absolute inset-0 rounded-sm"
-          style={{
-            background: 'linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.1) 100%)',
-          }}
+      </mesh>
+      
+      {/* Folded notes inside - with physics */}
+      {notes.map((note, i) => (
+        <FoldedNote 
+          key={i}
+          position={note.position}
+          rotation={note.rotation}
+          color={note.color}
+          scale={note.scale}
+          isShaking={isClicked}
+          jarRotation={jarRotation}
         />
-      </div>
-    </motion.div>
+      ))}
+      
+      {/* Deep purple cap - flat, no handle */}
+      <group ref={capRef} position={[0, 1.2, 0]}>
+        <mesh>
+          <cylinderGeometry args={[1.0, 1.0, 0.25, 64]} />
+          <meshStandardMaterial 
+            color="#2e1065"
+            roughness={0.65}
+            metalness={0.1}
+          />
+        </mesh>
+        {/* Subtle cap detail */}
+        <mesh position={[0, 0.13, 0]}>
+          <cylinderGeometry args={[0.93, 1.0, 0.06, 64]} />
+          <meshStandardMaterial 
+            color="#3b0764"
+            roughness={0.6}
+            metalness={0.1}
+          />
+        </mesh>
+        {/* Vivlit logo - embossed effect with shadow layer */}
+        <Text
+          position={[0, 0.165, 0.008]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          fontSize={0.36}
+          color="#1e0533"
+          anchorX="center"
+          anchorY="middle"
+        >
+          Vivlit
+        </Text>
+        {/* Vivlit logo - highlight layer on top */}
+        <Text
+          position={[0, 0.17, 0]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          fontSize={0.36}
+          color="#e9d5ff"
+          anchorX="center"
+          anchorY="middle"
+        >
+          Vivlit
+        </Text>
+      </group>
+      
+      {/* Soft natural shadow */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.2, 0]}>
+        <circleGeometry args={[1.1, 64]} />
+        <meshBasicMaterial 
+          color="#2d1b4e" 
+          transparent 
+          opacity={0.2}
+        />
+      </mesh>
+    </group>
   );
 };
 
-// Rising note for click interaction
-const RisingNote = ({ 
-  onComplete 
+const Scene = ({ 
+  isHovered,
+  isClicked,
+  showNote,
+  onHover,
+  onClick,
+  onRotationChange
 }: { 
-  onComplete: () => void;
+  isHovered: boolean;
+  isClicked: boolean;
+  showNote: boolean;
+  onHover: (hovered: boolean) => void;
+  onClick: () => void;
+  onRotationChange: (rotation: { x: number; y: number }) => void;
 }) => {
+  const { camera } = useThree();
+  useEffect(() => {
+    // Front-facing view, slightly elevated for a nice angle
+    camera.position.set(0, 0.8, 5.5);
+    camera.lookAt(0, 0.2, 0);
+  }, [camera]);
+
   return (
-    <motion.div
-      className="absolute left-1/2 pointer-events-none z-20"
-      style={{ bottom: '45%' }}
-      initial={{ y: 0, opacity: 1, x: '-50%' }}
-      animate={{ 
-        y: [-20, -60, -40, 0],
-        opacity: [1, 1, 1, 0],
-        rotate: [0, -10, 5, 0],
-      }}
-      transition={{ 
-        duration: 1.5, 
-        ease: "easeInOut",
-      }}
-      onAnimationComplete={onComplete}
-    >
-      <div className="w-6 h-5 bg-gradient-to-br from-rose-200 to-rose-300 rounded-sm shadow-lg">
-        <div 
-          className="absolute top-0 right-0 bg-white/50 w-2 h-2"
-          style={{ clipPath: 'polygon(100% 0, 0 0, 100% 100%)' }}
-        />
-      </div>
-    </motion.div>
+    <>
+      {/* Orbit controls for rotation */}
+      <OrbitControls 
+        enableZoom={false}
+        enablePan={false}
+        minPolarAngle={Math.PI / 3}
+        maxPolarAngle={Math.PI / 2}
+        minAzimuthAngle={-Math.PI / 4}
+        maxAzimuthAngle={Math.PI / 4}
+        rotateSpeed={0.5}
+      />
+      
+      <ambientLight intensity={0.7} />
+      <directionalLight position={[3, 8, 5]} intensity={1.2} />
+      <directionalLight position={[-3, 5, -3]} intensity={0.5} />
+      <pointLight position={[0, -2, 3]} intensity={0.4} color="#ffd4e5" />
+      
+      <group position={[0, -0.3, 0]}>
+        <Float 
+          speed={1.2} 
+          rotationIntensity={0.02} 
+          floatIntensity={0.1}
+          floatingRange={[-0.02, 0.02]}
+        >
+          <GlassJar 
+            isHovered={isHovered}
+            isClicked={isClicked}
+            showNote={showNote}
+            onHover={onHover}
+            onClick={onClick}
+            onRotationChange={onRotationChange}
+          />
+        </Float>
+      </group>
+      
+      <Environment preset="apartment" />
+    </>
   );
 };
 
-// Sparkle component
-const Sparkle = ({ 
-  x, 
-  y, 
-  delay,
-  size = 8 
+// Note reveal overlay
+const NoteOverlay = ({ 
+  isVisible, 
+  onClose 
 }: { 
-  x: number; 
-  y: number; 
-  delay: number;
-  size?: number;
-}) => (
-  <motion.div
-    className="absolute pointer-events-none"
-    style={{ left: `${x}%`, top: `${y}%` }}
-    initial={{ opacity: 0, scale: 0 }}
-    animate={{ 
-      opacity: [0, 1, 0],
-      scale: [0, 1, 0],
-    }}
-    transition={{
-      duration: 2,
-      repeat: Infinity,
-      delay,
-      ease: "easeInOut",
-    }}
-  >
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="#ffc700">
-      <path d="M12 2L9.5 9.5L2 12L9.5 14.5L12 22L14.5 14.5L22 12L14.5 9.5L12 2Z"/>
-    </svg>
-  </motion.div>
-);
+  isVisible: boolean; 
+  onClose: () => void;
+}) => {
+  const messages = [
+    "✨ You are doing better than you think ✨",
+    "💕 Someone is grateful you exist 💕",
+    "🌟 Your smile makes a difference 🌟",
+    "💫 Today is full of possibilities 💫",
+    "🦋 You're braver than you believe 🦋",
+  ];
+  
+  const message = useMemo(() => messages[Math.floor(Math.random() * messages.length)], [isVisible]);
+  
+  return (
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          className="fixed inset-0 flex items-center justify-center z-50 cursor-pointer"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+        >
+          {/* Backdrop blur */}
+          <motion.div 
+            className="absolute inset-0 bg-black/20 backdrop-blur-md"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          />
+          
+          {/* Note card */}
+          <motion.div
+            className="relative bg-gradient-to-b from-amber-50 to-orange-50 w-72 h-96 rounded-2xl shadow-2xl flex items-center justify-center p-8"
+            style={{
+              boxShadow: '0 30px 90px rgba(0,0,0,0.32), inset 0 0 0 1px rgba(255,255,255,0.6)',
+            }}
+            initial={{ scale: 0.8, y: 20, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            exit={{ scale: 0.8, y: 20, opacity: 0 }}
+            transition={{ type: "spring", damping: 20, stiffness: 300 }}
+          >
+            <p className="font-heading text-2xl text-primary text-center leading-relaxed">
+              {message}
+            </p>
+            
+            {/* Corner fold effect */}
+            <div 
+              className="absolute top-0 right-0 w-12 h-12 bg-gradient-to-br from-white/60 to-transparent"
+              style={{
+                clipPath: 'polygon(100% 0, 0 0, 100% 100%)',
+              }}
+            />
+          </motion.div>
+          
+          {/* Hint to close */}
+          <motion.p
+            className="absolute bottom-20 text-white/80 text-sm"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            Click anywhere to close
+          </motion.p>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
 
 const Interactive3DJar = ({ onInteraction }: Interactive3DJarProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
-  const [showRisingNote, setShowRisingNote] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  
-  // Mouse tracking for 3D rotation effect
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  
-  const springConfig = { stiffness: 150, damping: 20 };
-  const rotateX = useSpring(useTransform(mouseY, [-100, 100], [8, -8]), springConfig);
-  const rotateY = useSpring(useTransform(mouseX, [-100, 100], [-8, 8]), springConfig);
-  
-  // Shine position based on mouse
-  const shineX = useSpring(useTransform(mouseX, [-100, 100], [20, 80]), springConfig);
-  const shineY = useSpring(useTransform(mouseY, [-100, 100], [20, 60]), springConfig);
-  
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    mouseX.set(e.clientX - centerX);
-    mouseY.set(e.clientY - centerY);
+  const [showNote, setShowNote] = useState(false);
+  const [jarRotation, setJarRotation] = useState({ x: 0, y: 0 });
+
+  const handleHover = (hovered: boolean) => {
+    setIsHovered(hovered);
+    onInteraction?.(hovered);
   };
-  
-  const handleMouseLeave = () => {
-    mouseX.set(0);
-    mouseY.set(0);
-    setIsHovered(false);
-    onInteraction?.(false);
+
+  const handleRotationChange = (rotation: { x: number; y: number }) => {
+    setJarRotation(rotation);
   };
-  
+
   const handleClick = () => {
-    if (!showRisingNote) {
-      setIsClicked(true);
-      setShowRisingNote(true);
-      
-      // Reset click state after animation
-      setTimeout(() => setIsClicked(false), 400);
-    }
+    setIsClicked(true);
+    setTimeout(() => {
+      setIsClicked(false);
+      setShowNote(true);
+    }, 500);
   };
-  
-  // Lid animation values
-  const lidY = useSpring(isClicked ? -12 : isHovered ? -6 : 0, springConfig);
-  const lidRotate = useSpring(isClicked ? -8 : isHovered ? -3 : 0, springConfig);
-  
-  // Jar colors matching the brand
-  const jarPrimaryColor = '#6b21a8'; // Purple/lavender theme
-  const jarBodyOpacity = 0.15;
-  
+
+  const handleCloseNote = () => {
+    setShowNote(false);
+  };
+
   return (
-    <div 
-      ref={containerRef}
-      className="w-full h-[400px] md:h-[500px] flex items-center justify-center cursor-pointer select-none"
-      onMouseMove={handleMouseMove}
-      onMouseEnter={() => {
-        setIsHovered(true);
-        onInteraction?.(true);
-      }}
-      onMouseLeave={handleMouseLeave}
-      onClick={handleClick}
-    >
-      <motion.div 
-        className="relative w-64 h-80 md:w-72 md:h-96"
-        style={{
-          rotateX,
-          rotateY,
-          transformStyle: 'preserve-3d',
-          perspective: 1000,
+    <div className="w-full h-[400px] md:h-[500px] cursor-pointer">
+      <Canvas
+        camera={{ position: [0, 0.8, 5.5], fov: 40 }}
+        style={{ background: 'transparent' }}
+        gl={{ 
+          alpha: true, 
+          antialias: true,
+          powerPreference: 'default',
+          failIfMajorPerformanceCaveat: false
         }}
-        animate={isHovered && !isClicked ? {
-          y: [0, -6, 0],
-        } : {}}
-        transition={{
-          duration: 2,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
+        dpr={[1, 2]}
       >
-        {/* Jar glow effect */}
-        <motion.div 
-          className="absolute inset-0 rounded-3xl blur-2xl"
-          style={{
-            background: `radial-gradient(ellipse at center, ${jarPrimaryColor}40 0%, transparent 70%)`,
-            transform: 'translateZ(-20px) scale(1.2)',
-          }}
-          animate={isHovered ? { opacity: 0.8 } : { opacity: 0.5 }}
+        <Scene 
+          isHovered={isHovered}
+          isClicked={isClicked}
+          showNote={showNote}
+          onHover={handleHover}
+          onClick={handleClick}
+          onRotationChange={handleRotationChange}
         />
-        
-        {/* Main jar SVG with 3D enhancements */}
-        <motion.svg 
-          className="w-full h-full"
-          viewBox="0 0 200 270" 
-          fill="none" 
-          xmlns="http://www.w3.org/2000/svg"
-          style={{ filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.2))' }}
-        >
-          <defs>
-            {/* Glass gradient */}
-            <linearGradient id="glassGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="white" stopOpacity="0.4" />
-              <stop offset="50%" stopColor="white" stopOpacity="0.1" />
-              <stop offset="100%" stopColor="white" stopOpacity="0.3" />
-            </linearGradient>
-            
-            {/* Jar body gradient for depth */}
-            <linearGradient id="jarBodyGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor={jarPrimaryColor} stopOpacity="0.2" />
-              <stop offset="30%" stopColor={jarPrimaryColor} stopOpacity="0.08" />
-              <stop offset="70%" stopColor={jarPrimaryColor} stopOpacity="0.08" />
-              <stop offset="100%" stopColor={jarPrimaryColor} stopOpacity="0.15" />
-            </linearGradient>
-            
-            {/* Lid gradient */}
-            <linearGradient id="lidGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#9333ea" />
-              <stop offset="100%" stopColor="#6b21a8" />
-            </linearGradient>
-            
-            {/* Shine gradient */}
-            <linearGradient id="shineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="white" stopOpacity="0.9" />
-              <stop offset="100%" stopColor="white" stopOpacity="0" />
-            </linearGradient>
-            
-            {/* Inner glow for notes containment */}
-            <radialGradient id="innerGlow" cx="50%" cy="60%" r="50%">
-              <stop offset="0%" stopColor="#fef3c7" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="transparent" />
-            </radialGradient>
-          </defs>
-          
-          {/* Jar Body with glass effect */}
-          <motion.path 
-            d="M48.5 49.5C39.9558 54.5815 30 64.089 30 80 V245 A20 20 0 0 0 50 265 H150 A20 20 0 0 0 170 245 V80C170 64.089 160.044 54.5815 151.5 49.5" 
-            fill="url(#jarBodyGradient)"
-            stroke={jarPrimaryColor}
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          
-          {/* Inner warm glow where notes sit */}
-          <ellipse 
-            cx="100" 
-            cy="170" 
-            rx="55" 
-            ry="70" 
-            fill="url(#innerGlow)"
-          />
-          
-          {/* Glass reflection - left side */}
-          <motion.path 
-            d="M45 90C53.6622 93.7533 55.3667 95.3378 55.5 110.5C55.6333 125.662 45 125 45 125" 
-            stroke="white"
-            strokeOpacity="0.7"
-            strokeWidth="6"
-            strokeLinecap="round"
-            style={{
-              filter: 'blur(1px)',
-            }}
-          />
-          
-          {/* Dynamic shine based on mouse */}
-          <ellipse
-            cx="60"
-            cy="100"
-            rx="8"
-            ry="25"
-            fill="white"
-            fillOpacity="0.3"
-            style={{
-              filter: 'blur(3px)',
-            }}
-          />
-          
-          {/* Right edge highlight */}
-          <path 
-            d="M160 90 V200" 
-            stroke="white"
-            strokeOpacity="0.2"
-            strokeWidth="4"
-            strokeLinecap="round"
-          />
-          
-          {/* Bottom curve highlight */}
-          <path 
-            d="M60 250 Q100 260 140 250" 
-            stroke="white"
-            strokeOpacity="0.15"
-            strokeWidth="3"
-            strokeLinecap="round"
-          />
-        </motion.svg>
-        
-        {/* Separate Lid SVG for animation */}
-        <motion.svg 
-          className="absolute top-0 left-0 w-full h-full pointer-events-none"
-          viewBox="0 0 200 270" 
-          fill="none" 
-          xmlns="http://www.w3.org/2000/svg"
-          style={{ 
-            y: lidY,
-            rotateX: lidRotate,
-            transformOrigin: 'center top',
-          }}
-        >
-          <defs>
-            <linearGradient id="lidGradientAnim" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#a855f7" />
-              <stop offset="50%" stopColor="#9333ea" />
-              <stop offset="100%" stopColor="#6b21a8" />
-            </linearGradient>
-          </defs>
-          
-          {/* Jar Lid */}
-          <path 
-            d="M150 50H50C41.7157 50 35 43.2843 35 35V20C35 11.7157 41.7157 5 50 5H150C158.284 5 165 11.7157 165 20V35C165 43.2843 158.284 50 150 50Z" 
-            fill="url(#lidGradientAnim)"
-            style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.2))' }}
-          />
-          
-          {/* Lid top highlight */}
-          <path 
-            d="M55 15 H145" 
-            stroke="white"
-            strokeOpacity="0.4"
-            strokeWidth="4"
-            strokeLinecap="round"
-          />
-          
-          {/* Lid bottom edge */}
-          <path 
-            d="M165 34.7551C165 44.5944 158.284 52.5102 150 52.5102H50C41.7157 52.5102 35 44.5944 35 34.7551" 
-            stroke="#581c87"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-          
-          {/* Decorative knob on lid */}
-          <ellipse 
-            cx="100" 
-            cy="12" 
-            rx="15" 
-            ry="6" 
-            fill="#c084fc"
-          />
-          <ellipse 
-            cx="100" 
-            cy="10" 
-            rx="10" 
-            ry="4" 
-            fill="#e9d5ff"
-            fillOpacity="0.6"
-          />
-        </motion.svg>
-        
-        {/* Notes container - clipped to jar interior */}
-        <div 
-          className="absolute overflow-hidden pointer-events-none"
-          style={{
-            top: '22%',
-            left: '18%',
-            width: '64%',
-            height: '55%',
-            borderRadius: '0 0 12px 12px',
-          }}
-        >
-          {/* Folded notes inside */}
-          {[0, 1, 2, 3, 4].map((i) => (
-            <FoldedNote 
-              key={i} 
-              index={i} 
-              isShaking={isClicked}
-              baseDelay={i * 0.2}
-            />
-          ))}
-          
-          {/* Rising note animation */}
-          <AnimatePresence>
-            {showRisingNote && (
-              <RisingNote 
-                onComplete={() => setShowRisingNote(false)} 
-              />
-            )}
-          </AnimatePresence>
-        </div>
-        
-        {/* Sparkles around jar */}
-        <Sparkle x={-5} y={15} delay={0} size={10} />
-        <Sparkle x={105} y={25} delay={0.7} size={8} />
-        <Sparkle x={-8} y={60} delay={1.4} size={6} />
-        <Sparkle x={108} y={70} delay={2.1} size={9} />
-        <Sparkle x={50} y={-5} delay={0.5} size={7} />
-        
-        {/* Floating hearts */}
-        <motion.div 
-          className="absolute -left-6 top-1/3 text-lg pointer-events-none"
-          animate={{
-            y: [0, -10, 0],
-            rotate: [0, 10, 0],
-            opacity: [0.6, 1, 0.6],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        >
-          💕
-        </motion.div>
-        
-        <motion.div 
-          className="absolute -right-4 top-1/2 text-sm pointer-events-none"
-          animate={{
-            y: [0, -8, 0],
-            rotate: [0, -15, 0],
-            opacity: [0.5, 0.9, 0.5],
-          }}
-          transition={{
-            duration: 2.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1,
-          }}
-        >
-          ✨
-        </motion.div>
-        
-        <motion.div 
-          className="absolute right-2 top-1/4 text-base pointer-events-none"
-          animate={{
-            y: [0, -12, 0],
-            x: [0, 5, 0],
-            opacity: [0.4, 0.8, 0.4],
-          }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 0.5,
-          }}
-        >
-          💜
-        </motion.div>
-      </motion.div>
+      </Canvas>
+      
+      <NoteOverlay isVisible={showNote} onClose={handleCloseNote} />
     </div>
   );
 };

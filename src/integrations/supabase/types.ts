@@ -362,8 +362,13 @@ export type Database = {
         Args: { p_session_id: string; p_user_id: string }
         Returns: undefined
       }
+      hash_jar_password: { Args: { p_password: string }; Returns: string }
       is_jar_owner_or_creator: {
         Args: { p_jar_id: string; p_user_id: string }
+        Returns: boolean
+      }
+      verify_jar_password: {
+        Args: { p_hash: string; p_password: string }
         Returns: boolean
       }
     }
