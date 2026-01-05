@@ -6,7 +6,7 @@ CREATE TABLE public.jars (
   theme TEXT NOT NULL DEFAULT 'warm',
   recipient_name TEXT,
   recipient_email TEXT,
-  share_token TEXT NOT NULL DEFAULT encode(gen_random_bytes(16), 'hex'),
+  share_token TEXT NOT NULL DEFAULT replace(gen_random_uuid()::text, '-', ''),
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   UNIQUE(share_token)
