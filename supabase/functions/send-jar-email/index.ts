@@ -1,12 +1,6 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-
-
-// 1. Import the dotenv loader (matching your std version)
-import { load } from "https://deno.land/std@0.190.0/dotenv/mod.ts";
-
-// 2. Load environment variables from .env file
-await load();
+/// <reference path="./deno.d.ts" />
+import { serve } from "std/http/server.ts";
+import { createClient } from "@supabase/supabase-js";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
@@ -155,7 +149,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Build the secure share URL using the jar's share_token
-    const baseUrl = req.headers.get("origin") || "https://vivlit.app";
+    const baseUrl = req.headers.get("origin") || "https://vivlit.com";
     const shareUrl = `${baseUrl}/jar/${jar.share_token}`;
 
     // Escape all user inputs to prevent HTML/script injection
