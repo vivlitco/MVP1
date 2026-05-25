@@ -28,3 +28,5 @@ temp/vivlit-light-up-moments-main
 .kiro/
 .vscode/
 .agents
+
+*.sql

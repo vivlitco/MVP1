@@ -9,9 +9,9 @@ import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-import { 
+import {
   User, Mail, Calendar, Gift, Users, LogOut, Sparkles,
-  ArrowLeft, Trash2, Heart,
+  Trash2, Heart,
 } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -95,13 +95,6 @@ const Profile = () => {
       <Navbar />
 
       <main className="container mx-auto px-4 pt-24 pb-12 max-w-2xl">
-        <button
-          onClick={() => navigate('/dashboard')}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Poppins, sans-serif', fontSize: 13, color: 'var(--ink-muted)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 0', marginBottom: 28 }}
-        >
-          <ArrowLeft size={14} /> Back to Dashboard
-        </button>
-
         {/* Profile Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div style={{ background: 'white', border: '1px solid rgba(180,155,130,0.18)', borderRadius: 20, overflow: 'hidden', marginBottom: 20, boxShadow: '0 2px 20px rgba(120,80,100,0.07)' }}>

@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Mail, Send, Instagram, Linkedin, CheckCircle, ArrowLeft } from 'lucide-react';
+import { Mail, Send, Instagram, Linkedin, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
@@ -106,13 +106,6 @@ const ContactPage = () => {
       <Navbar />
 
       <main style={{ maxWidth: 1024, margin: '0 auto', padding: '96px 24px 80px' }}>
-        <button
-          onClick={() => navigate(-1)}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Poppins, sans-serif', fontSize: 13, color: 'var(--ink-muted)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 0', marginBottom: 48 }}
-        >
-          <ArrowLeft size={14} /> Back
-        </button>
-
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}

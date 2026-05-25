@@ -42,13 +42,13 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     const token = authHeader.replace("Bearer ", "");
-    const { data, error: authError } = await supabase.auth.getClaims(token);
-    if (authError || !data?.claims) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
       return new Response(JSON.stringify({ error: "Invalid or expired authentication token" }),
         { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } });
     }
 
-    const userId = data.claims.sub;
+    const userId = user.id;
 
     const { recipientEmail, senderName, personalMessage, cardId } = await req.json();
 

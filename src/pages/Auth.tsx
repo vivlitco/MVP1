@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
-import { Sparkles, ArrowLeft, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Sparkles, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { z } from 'zod';
 
 const emailSchema = z.string().email('Please enter a valid email address');
@@ -111,15 +111,6 @@ const Auth = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--bg-page)' }}>
       <div className="w-full max-w-sm">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-1.5 text-sm mb-8 transition-colors"
-          style={{ color: 'var(--ink-muted)', textDecoration: 'none' }}
-        >
-          <ArrowLeft size={15} />
-          Back to home
-        </Link>
-
         <div
           style={{
             background: 'white',

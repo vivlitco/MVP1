@@ -490,115 +490,93 @@ const ViewJar = () => {
 
   if (loading || authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Sparkles className="w-8 h-8 text-primary animate-spin" />
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-page)' }}>
+        <Sparkles className="w-8 h-8 animate-spin" style={{ color: 'var(--accent-plum)' }} />
       </div>
     );
   }
 
   if (!jar) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Card className="max-w-md mx-4">
-          <CardContent className="text-center py-12">
-            <Gift className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <h2 className="font-heading text-xl font-semibold mb-2">Jar Not Found</h2>
-            <p className="text-muted-foreground">
-              This jar doesn't exist or the link is incorrect.
-            </p>
-          </CardContent>
-        </Card>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-page)', padding: 16 }}>
+        <div style={{ maxWidth: 400, width: '100%', background: 'white', border: '1px solid rgba(180,155,130,0.18)', borderRadius: 20, padding: 48, textAlign: 'center', boxShadow: '0 4px 24px rgba(120,80,100,0.07)' }}>
+          <Gift className="w-16 h-16 mx-auto mb-4" style={{ color: 'var(--ink-muted)' }} />
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: 'var(--ink-primary)', margin: '0 0 8px' }}>Jar Not Found</h2>
+          <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 14, color: 'var(--ink-secondary)', margin: 0 }}>
+            This jar doesn't exist or the link is incorrect.
+          </p>
+        </div>
       </div>
     );
   }
 
   // Login requirement screen
   if (requiresLogin) {
-    const themeColors = getThemeColors(jar.theme);
     return (
-      <div className={`min-h-screen bg-gradient-to-br ${themeColors} flex items-center justify-center p-4`}>
-        <Card className="max-w-md w-full border-none shadow-float">
-          <CardContent className="p-8 text-center">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center mx-auto mb-6 animate-pulse-glow">
-              <Gift className="w-10 h-10 text-primary-foreground" />
-            </div>
-            
-            <h2 className="font-heading text-2xl font-semibold mb-2">{jar.name}</h2>
-            
-            <p className="text-sm text-muted-foreground mb-6">
-              Someone special shared a jar of notes with you! 
-              Sign in or create an account to open it.
-            </p>
-            
-            <div className="space-y-3">
-              <Button
-                onClick={() => navigate(`/auth?redirect=/jar/${token}`)}
-                className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90"
-              >
-                <LogIn className="w-4 h-4 mr-2" />
-                Sign In to Open
-              </Button>
-              <p className="text-xs text-muted-foreground">
-                Don't have an account? You can create one for free!
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-page)', padding: 16 }}>
+        <div style={{ maxWidth: 400, width: '100%', background: 'white', border: '1px solid rgba(180,155,130,0.18)', borderRadius: 20, padding: 40, textAlign: 'center', boxShadow: '0 4px 24px rgba(120,80,100,0.08)' }}>
+          <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(140,90,180,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+            <Gift className="w-9 h-9" style={{ color: 'var(--accent-plum)' }} />
+          </div>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: 'var(--ink-primary)', margin: '0 0 8px' }}>{jar.name}</h2>
+          <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 14, color: 'var(--ink-secondary)', margin: '0 0 24px', lineHeight: 1.6 }}>
+            Someone special shared a jar of notes with you! Sign in to open it.
+          </p>
+          <button
+            onClick={() => navigate(`/auth?redirect=/jar/${token}`)}
+            style={{ width: '100%', background: 'var(--accent-plum)', color: 'white', border: 'none', borderRadius: 8, padding: '12px 24px', fontFamily: 'Poppins, sans-serif', fontSize: 14, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 12 }}
+          >
+            <LogIn className="w-4 h-4" /> Sign In to Open
+          </button>
+          <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 12, color: 'var(--ink-muted)', margin: 0 }}>
+            Don't have an account? You can create one for free!
+          </p>
+        </div>
       </div>
     );
   }
 
   // Password lock screen
   if (isLocked) {
-    const themeColors = getThemeColors(jar.theme);
     return (
-      <div className={`min-h-screen bg-gradient-to-br ${themeColors} flex items-center justify-center p-4`}>
-        <Card className="max-w-md w-full border-none shadow-float">
-          <CardContent className="p-8 text-center">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center mx-auto mb-6">
-              <Lock className="w-10 h-10 text-primary-foreground" />
-            </div>
-            
-            <h2 className="font-heading text-2xl font-semibold mb-2">{jar.name}</h2>
-            
-            <p className="text-sm text-muted-foreground mb-6">
-              This jar is password protected. Enter the password to view.
-            </p>
-            
-            <div className="space-y-4">
-              <div className="relative">
-                <Input
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter password"
-                  value={passwordInput}
-                  onChange={(e) => {
-                    setPasswordInput(e.target.value);
-                    setPasswordError('');
-                  }}
-                  onKeyDown={(e) => e.key === 'Enter' && handlePasswordSubmit()}
-                  className="pr-10"
-                />
-                <button
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-              
-              {passwordError && (
-                <p className="text-sm text-destructive">{passwordError}</p>
-              )}
-              
-              <Button
-                onClick={handlePasswordSubmit}
-                className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90"
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-page)', padding: 16 }}>
+        <div style={{ maxWidth: 400, width: '100%', background: 'white', border: '1px solid rgba(180,155,130,0.18)', borderRadius: 20, padding: 40, textAlign: 'center', boxShadow: '0 4px 24px rgba(120,80,100,0.08)' }}>
+          <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(140,90,180,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+            <Lock className="w-9 h-9" style={{ color: 'var(--accent-plum)' }} />
+          </div>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: 'var(--ink-primary)', margin: '0 0 8px' }}>{jar.name}</h2>
+          <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 14, color: 'var(--ink-secondary)', margin: '0 0 24px', lineHeight: 1.6 }}>
+            This jar is password protected. Enter the password to view.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ position: 'relative' }}>
+              <Input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Enter password"
+                value={passwordInput}
+                onChange={(e) => { setPasswordInput(e.target.value); setPasswordError(''); }}
+                onKeyDown={(e) => e.key === 'Enter' && handlePasswordSubmit()}
+                className="pr-10"
+                style={{ fontFamily: 'Poppins, sans-serif' }}
+              />
+              <button
+                onClick={() => setShowPassword(!showPassword)}
+                style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-muted)', display: 'flex' }}
               >
-                Unlock Jar
-              </Button>
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
-          </CardContent>
-        </Card>
+            {passwordError && (
+              <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 13, color: '#dc2626', margin: 0 }}>{passwordError}</p>
+            )}
+            <button
+              onClick={handlePasswordSubmit}
+              style={{ background: 'var(--accent-plum)', color: 'white', border: 'none', borderRadius: 8, padding: '12px 24px', fontFamily: 'Poppins, sans-serif', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
+            >
+              Unlock Jar
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -608,23 +586,19 @@ const ViewJar = () => {
   const isCreator = user?.id === jar.user_id;
 
   if (isTimeLocked && !isCreator) {
-    const themeColors = getThemeColors(jar.theme);
     return (
-      <div className={`min-h-screen bg-gradient-to-br ${themeColors} p-4`}>
-        <div className="max-w-lg mx-auto pt-4">
-          <div className="flex items-center justify-between mb-6">
-            <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="text-foreground/80 hover:text-foreground hover:bg-background/50">
-              <ArrowLeft className="w-4 h-4 mr-1" /> Back
-            </Button>
+      <div style={{ minHeight: '100vh', background: 'var(--bg-page)', padding: 16 }}>
+        <div style={{ maxWidth: 520, margin: '0 auto', paddingTop: 16 }}>
+          <button
+            onClick={() => navigate(-1)}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Poppins, sans-serif', fontSize: 13, color: 'var(--ink-muted)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 0', marginBottom: 24 }}
+          >
+            <ArrowLeft size={14} /> Back
+          </button>
+          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 700, color: 'var(--ink-primary)', textAlign: 'center', marginBottom: 24 }}>{jar.name}</h1>
+          <div style={{ background: 'white', border: '1px solid rgba(180,155,130,0.18)', borderRadius: 20, overflow: 'hidden', boxShadow: '0 4px 24px rgba(120,80,100,0.07)' }}>
+            <CountdownTimer unlockDate={jar.unlock_date!} jarName={jar.name} />
           </div>
-          <div className="text-center mb-6 animate-fade-in">
-            <h1 className="font-heading text-2xl md:text-3xl font-bold text-foreground mb-2">{jar.name}</h1>
-          </div>
-          <Card className="border-none shadow-float">
-            <CardContent className="p-0">
-              <CountdownTimer unlockDate={jar.unlock_date!} jarName={jar.name} />
-            </CardContent>
-          </Card>
         </div>
       </div>
     );
@@ -636,39 +610,32 @@ const ViewJar = () => {
   const isUnlimited = jar.open_mode === 'unlimited';
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${themeColors} p-4`}>
-      <div className="max-w-lg mx-auto pt-4 pb-12">
+    <div style={{ minHeight: '100vh', background: 'var(--bg-page)' }}>
+      <div style={{ maxWidth: 520, margin: '0 auto', padding: '16px 16px 48px' }}>
         {/* Back Navigation */}
-        <div className="flex items-center justify-between mb-6">
-          <Button
-            variant="ghost"
-            size="sm"
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+          <button
             onClick={() => navigate(-1)}
-            className="text-foreground/80 hover:text-foreground hover:bg-background/50"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Poppins, sans-serif', fontSize: 13, color: 'var(--ink-muted)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 0' }}
           >
-            <ArrowLeft className="w-4 h-4 mr-1" />
-            Back
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
+            <ArrowLeft size={14} /> Back
+          </button>
+          <button
             onClick={() => navigate(user ? '/dashboard' : '/')}
-            className="text-foreground/80 hover:text-foreground hover:bg-background/50"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Poppins, sans-serif', fontSize: 13, color: 'var(--ink-muted)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 0' }}
           >
-            <Home className="w-4 h-4 mr-1" />
-            {user ? 'Dashboard' : 'Home'}
-          </Button>
+            <Home size={14} /> {user ? 'Dashboard' : 'Home'}
+          </button>
         </div>
-        
+
         {/* Jar Header */}
-        <div className="text-center mb-6 animate-fade-in">
-          <h1 className="font-heading text-2xl md:text-3xl font-bold text-foreground mb-2">
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(22px, 5vw, 30px)', fontWeight: 700, color: 'var(--ink-primary)', margin: '0 0 6px' }}>
             {jar.name}
           </h1>
           {jar.is_password_protected && (
-            <div className="flex items-center justify-center gap-1 mt-2 text-xs text-foreground/60">
-              <Lock className="w-3 h-3" />
-              Protected
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, fontFamily: 'Poppins, sans-serif', fontSize: 12, color: 'var(--ink-muted)' }}>
+              <Lock size={11} /> Protected
             </div>
           )}
         </div>
@@ -677,119 +644,103 @@ const ViewJar = () => {
         {revealedNote && (
           <AnimatePresence>
             <motion.div
-              className="fixed inset-0 bg-foreground/40 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+              style={{ position: 'fixed', inset: 0, background: 'rgba(30,10,50,0.45)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, zIndex: 50 }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setRevealedNote(null)}
             >
-              <motion.div 
-                className="max-w-md w-full"
+              <motion.div
+                style={{ maxWidth: 420, width: '100%' }}
                 initial={{ opacity: 0, scale: 0.5, rotateX: 30, y: 60 }}
                 animate={{ opacity: 1, scale: 1, rotateX: 0, y: 0 }}
                 exit={{ opacity: 0, scale: 0.8, y: -40 }}
                 transition={{ type: 'spring', stiffness: 80, damping: 12 }}
-                style={{ perspective: '1200px' }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <div 
-                  className="relative overflow-hidden rounded-xl"
+                <div
                   style={{
+                    position: 'relative',
+                    overflow: 'hidden',
+                    borderRadius: 16,
                     background: 'linear-gradient(135deg, hsl(40, 40%, 98%) 0%, hsl(35, 30%, 96%) 50%, hsl(330, 20%, 97%) 100%)',
-                    boxShadow: '0 30px 60px -12px hsl(var(--foreground) / 0.3), 0 0 0 1px hsl(var(--foreground) / 0.05), 0 0 80px hsl(var(--primary) / 0.1)',
+                    boxShadow: '0 30px 60px -12px rgba(30,10,50,0.3), 0 0 0 1px rgba(180,155,130,0.12)',
                   }}
                 >
                   {/* Paper texture */}
-                  <div 
-                    className="absolute inset-0 opacity-20 pointer-events-none"
-                    style={{
-                      backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")',
-                    }}
+                  <div
+                    style={{ position: 'absolute', inset: 0, opacity: 0.2, pointerEvents: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }}
                   />
-                  
-                  {/* Gradient accent strip */}
-                  <motion.div 
+                  {/* Accent strip using jar theme */}
+                  <motion.div
                     className={`h-2 bg-gradient-to-r ${themeColors}`}
                     initial={{ scaleX: 0 }}
                     animate={{ scaleX: 1 }}
                     transition={{ delay: 0.2, duration: 0.5 }}
                     style={{ transformOrigin: 'left' }}
                   />
-                  
-                  <div className="p-8 pt-6 text-center relative">
-                    <button 
+                  <div style={{ padding: '24px 32px 32px', textAlign: 'center', position: 'relative' }}>
+                    <button
                       onClick={() => setRevealedNote(null)}
-                      className="absolute top-3 right-3 p-2 rounded-full hover:bg-foreground/10 transition-colors"
+                      style={{ position: 'absolute', top: 12, right: 12, padding: 8, borderRadius: '50%', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-muted)', display: 'flex' }}
                     >
-                      <X className="w-5 h-5 text-foreground/60" />
+                      <X className="w-5 h-5" />
                     </button>
-                    
-                    <motion.div 
-                      className="flex justify-center mb-5"
+                    <motion.div
+                      style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}
                       initial={{ scale: 0, rotate: -180 }}
                       animate={{ scale: 1, rotate: 0 }}
                       transition={{ delay: 0.15, type: 'spring', stiffness: 200 }}
                     >
-                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center shadow-md">
+                      <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(140,90,180,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {revealedNote.content_type === 'image' ? (
-                          <Image className="w-7 h-7 text-primary" />
+                          <Image className="w-7 h-7" style={{ color: 'var(--accent-plum)' }} />
                         ) : revealedNote.content_type === 'voice' ? (
-                          <Mic className="w-7 h-7 text-primary" />
+                          <Mic className="w-7 h-7" style={{ color: 'var(--accent-plum)' }} />
                         ) : revealedNote.content_type === 'link' ? (
-                          <Link2 className="w-7 h-7 text-primary" />
+                          <Link2 className="w-7 h-7" style={{ color: 'var(--accent-plum)' }} />
                         ) : (
-                          <span className="text-2xl">💌</span>
+                          <span style={{ fontSize: 24 }}>💌</span>
                         )}
                       </div>
                     </motion.div>
-                    
-                    <motion.div 
-                      className="relative"
+                    <motion.div
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.3, duration: 0.5 }}
                     >
                       {renderNoteContent(revealedNote)}
                     </motion.div>
-                    
-                    <motion.div 
-                      className="flex items-center justify-center gap-2 my-6 text-primary/40"
+                    <motion.div
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, margin: '20px 0', color: 'var(--ink-muted)', opacity: 0.5 }}
                       initial={{ opacity: 0, scaleX: 0 }}
-                      animate={{ opacity: 1, scaleX: 1 }}
+                      animate={{ opacity: 0.5, scaleX: 1 }}
                       transition={{ delay: 0.5 }}
                     >
-                      <div className="w-8 h-[1px] bg-current" />
+                      <div style={{ width: 32, height: 1, background: 'currentColor' }} />
                       <motion.div
                         animate={{ rotate: [0, 180, 360] }}
                         transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
                       >
                         <Sparkles className="w-4 h-4" />
                       </motion.div>
-                      <div className="w-8 h-[1px] bg-current" />
+                      <div style={{ width: 32, height: 1, background: 'currentColor' }} />
                     </motion.div>
-                    
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.6 }}
                     >
-                      <Button
+                      <button
                         onClick={() => setRevealedNote(null)}
-                        variant="outline"
-                        className="border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground transition-all"
+                        style={{ fontFamily: 'Poppins, sans-serif', fontSize: 13, fontWeight: 500, color: 'var(--accent-plum)', background: 'transparent', border: '1px solid rgba(140,90,180,0.3)', borderRadius: 8, padding: '9px 20px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}
                       >
-                        <Gift className="w-4 h-4 mr-2" />
-                        Close
-                      </Button>
+                        <Gift className="w-4 h-4" /> Close
+                      </button>
                     </motion.div>
                   </div>
-                  
-                  {/* Dog ear */}
-                  <div 
-                    className="absolute bottom-0 right-0 w-8 h-8"
-                    style={{
-                      background: 'linear-gradient(135deg, transparent 50%, hsl(var(--foreground) / 0.04) 50%)',
-                    }}
+                  <div
+                    style={{ position: 'absolute', bottom: 0, right: 0, width: 32, height: 32, background: 'linear-gradient(135deg, transparent 50%, rgba(180,155,130,0.08) 50%)' }}
                   />
                 </div>
               </motion.div>
@@ -798,7 +749,7 @@ const ViewJar = () => {
         )}
 
         {/* Interactive Jar */}
-        <div className="mb-8 relative">
+        <div style={{ marginBottom: 24, position: 'relative' }}>
           <JarVisual
             notes={notes.map(n => ({
               ...n,
@@ -811,123 +762,108 @@ const ViewJar = () => {
             onShake={handleShakeJar}
             canOpenNote={canOpenNote()}
           />
-          
-          {/* Charms overlay */}
-          {charms.length > 0 && (
-            <Charms charms={charms} />
+          {charms.length > 0 && <Charms charms={charms} />}
+        </div>
+
+        {/* Stats & Instructions */}
+        <div style={{ background: 'white', border: '1px solid rgba(180,155,130,0.18)', borderRadius: 16, padding: 24, boxShadow: '0 2px 16px rgba(120,80,100,0.06)' }}>
+          {/* Stats */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 40, marginBottom: 24, textAlign: 'center' }}>
+            <div>
+              <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, fontWeight: 700, color: 'var(--accent-plum)', margin: '0 0 2px' }}>{userOpenedNotes.length}</p>
+              <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 11, color: 'var(--ink-muted)', margin: 0 }}>Opened by you</p>
+            </div>
+            <div style={{ width: 1, background: 'rgba(180,155,130,0.2)' }} />
+            <div>
+              <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, fontWeight: 700, color: 'var(--accent-rose)', margin: '0 0 2px' }}>{userUnopenedCount}</p>
+              <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 11, color: 'var(--ink-muted)', margin: 0 }}>Remaining</p>
+            </div>
+          </div>
+
+          {/* Instructions */}
+          {userUnopenedCount > 0 ? (
+            <div style={{ textAlign: 'center', marginBottom: 24 }}>
+              {canOpenNote() ? (
+                <div>
+                  <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 13, color: 'var(--ink-secondary)', marginBottom: 16 }}>
+                    {isUnlimited
+                      ? 'Shake the jar and click any note to reveal it!'
+                      : "Shake the jar and click a note to reveal today's message!"}
+                  </p>
+                  <button
+                    onClick={handleShakeJar}
+                    style={{ background: 'var(--accent-plum)', color: 'white', border: 'none', borderRadius: 8, padding: '12px 28px', fontFamily: 'Poppins, sans-serif', fontSize: 14, fontWeight: 500, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8 }}
+                  >
+                    <Gift className="w-5 h-5" /> Shake the Jar
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(180,155,130,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                    <Lock className="w-6 h-6" style={{ color: 'var(--ink-muted)' }} />
+                  </div>
+                  <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 13, color: 'var(--ink-secondary)', margin: 0, lineHeight: 1.6 }}>
+                    You've opened today's note.<br />Come back tomorrow for another!
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', marginBottom: 24, padding: '16px', borderRadius: 12, background: 'rgba(140,90,180,0.06)' }}>
+              <Sparkles className="w-8 h-8 mx-auto mb-2" style={{ color: 'var(--accent-plum)' }} />
+              <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, fontWeight: 600, color: 'var(--ink-primary)', margin: '0 0 4px' }}>All notes opened!</p>
+              <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 13, color: 'var(--ink-secondary)', margin: 0 }}>
+                You've read all the messages in this jar.
+              </p>
+            </div>
+          )}
+
+          {/* Opened Notes History */}
+          {userOpenedNotes.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 12, fontWeight: 500, color: 'var(--ink-muted)', margin: '0 0 4px' }}>Your opened notes (tap to view)</p>
+              {userOpenedNotes.map((note, index) => (
+                <div
+                  key={note.id}
+                  onClick={() => setRevealedNote(note)}
+                  style={{ padding: '12px 16px', borderRadius: 10, background: 'rgba(180,155,130,0.07)', border: '1px solid rgba(180,155,130,0.14)', cursor: 'pointer', transition: 'background 0.15s ease' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(180,155,130,0.12)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(180,155,130,0.07)')}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: 11, color: 'var(--ink-muted)', flexShrink: 0 }}>
+                      {isUnlimited ? `#${index + 1}` : `Day ${index + 1}`}
+                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, overflow: 'hidden' }}>
+                      {note.content_type === 'image' && <Image className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--ink-muted)' }} />}
+                      {note.content_type === 'voice' && <Mic className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--ink-muted)' }} />}
+                      {note.content_type === 'link' && <Link2 className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--ink-muted)' }} />}
+                      <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 13, color: 'var(--ink-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {note.content_type === 'voice' ? 'Voice note' :
+                         note.content_type === 'image' ? 'Image' :
+                         `"${note.content}"`}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
-        {/* Instructions & Stats */}
-        <Card className="border-none shadow-float animate-fade-in">
-          <CardContent className="p-6">
-            {/* Stats - Per user */}
-            <div className="flex justify-center gap-8 mb-6 text-center">
-              <div>
-                <div className="text-2xl font-bold text-primary">{userOpenedNotes.length}</div>
-                <div className="text-xs text-muted-foreground">Opened by you</div>
-              </div>
-              <div className="w-px bg-border" />
-              <div>
-                <div className="text-2xl font-bold text-accent">{userUnopenedCount}</div>
-                <div className="text-xs text-muted-foreground">Remaining</div>
-              </div>
-            </div>
-
-            {/* Instructions */}
-            {userUnopenedCount > 0 ? (
-              <div className="text-center mb-6">
-                {canOpenNote() ? (
-                  <div className="space-y-4">
-                    <p className="text-sm text-muted-foreground">
-                      {isUnlimited 
-                        ? 'Shake the jar and click any note to reveal it!' 
-                        : 'Shake the jar and click a note to reveal today\'s message!'}
-                    </p>
-                    <Button
-                      onClick={handleShakeJar}
-                      size="lg"
-                      variant="outline"
-                      className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-                    >
-                      <Gift className="w-5 h-5 mr-2" />
-                      Shake the Jar
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
-                      <Lock className="w-6 h-6 text-muted-foreground" />
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      You've opened today's note.<br />
-                      Come back tomorrow for another!
-                    </p>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="text-center mb-6 p-4 rounded-xl bg-muted/50">
-                <Sparkles className="w-8 h-8 text-primary mx-auto mb-2" />
-                <p className="font-medium">All notes opened!</p>
-                <p className="text-sm text-muted-foreground">
-                  You've read all the messages in this jar.
-                </p>
-              </div>
-            )}
-
-            {/* Opened Notes History - Per user */}
-            {userOpenedNotes.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="text-sm font-medium text-muted-foreground">Your opened notes (tap to view)</h3>
-                {userOpenedNotes.map((note, index) => (
-                  <div
-                    key={note.id}
-                    onClick={() => setRevealedNote(note)}
-                    className="p-4 rounded-lg bg-muted/30 text-sm cursor-pointer hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex items-start gap-3">
-                      <span className="text-xs text-muted-foreground shrink-0">
-                        {isUnlimited ? `#${index + 1}` : `Day ${index + 1}`}
-                      </span>
-                      <div className="flex items-center gap-2 flex-1">
-                        {note.content_type === 'image' && <Image className="w-4 h-4 text-muted-foreground" />}
-                        {note.content_type === 'voice' && <Mic className="w-4 h-4 text-muted-foreground" />}
-                        {note.content_type === 'link' && <Link2 className="w-4 h-4 text-muted-foreground" />}
-                        <p className="text-foreground/90 truncate">
-                          {note.content_type === 'voice' ? 'Voice note' : 
-                           note.content_type === 'image' ? 'Image' :
-                           `"${note.content}"`}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Share Button - Only visible to creator */}
+        {/* Share — creator only */}
         {isCreator && (
-          <div className="mt-6 text-center">
-            <Button
-              variant="ghost"
+          <div style={{ marginTop: 20, textAlign: 'center' }}>
+            <button
               onClick={copyShareLink}
-              className="text-foreground/80 hover:text-foreground"
+              style={{ fontFamily: 'Poppins, sans-serif', fontSize: 13, color: 'var(--ink-muted)', background: 'transparent', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px' }}
             >
               {copied ? (
-                <>
-                  <Check className="w-4 h-4 mr-2" />
-                  Copied!
-                </>
+                <><Check className="w-4 h-4" style={{ color: 'var(--accent-plum)' }} /> Copied!</>
               ) : (
-                <>
-                  <Copy className="w-4 h-4 mr-2" />
-                  Share this jar
-                </>
+                <><Copy className="w-4 h-4" /> Share this jar</>
               )}
-            </Button>
+            </button>
           </div>
         )}
       </div>

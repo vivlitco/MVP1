@@ -4,7 +4,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import {
   Mail, Lock, Palette, Users, Mic, Image, Link2, Gift,
-  Smartphone, Globe, Sparkles, Calendar, Share2, ArrowLeft, Wand2, Stamp
+  Smartphone, Globe, Sparkles, Calendar, Share2, Wand2, Stamp
 } from 'lucide-react';
 
 const jarFeatures = [
@@ -56,13 +56,6 @@ const FeaturesPage = () => {
       <Navbar />
 
       <main style={{ maxWidth: 1100, margin: '0 auto', padding: '96px 24px 80px' }}>
-        <button
-          onClick={() => navigate(-1)}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Poppins, sans-serif', fontSize: 13, color: 'var(--ink-muted)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 0', marginBottom: 48 }}
-        >
-          <ArrowLeft size={14} /> Back
-        </button>
-
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}

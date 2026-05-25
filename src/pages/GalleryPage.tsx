@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import birthdayImg from '@/assets/gallery/birthday-jar.jpg';
@@ -44,14 +43,6 @@ const GalleryPage = () => {
       <Navbar />
 
       <section style={{ padding: '96px 24px 80px', maxWidth: 1100, margin: '0 auto' }}>
-          {/* Back button */}
-          <button
-            onClick={() => navigate(-1)}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Poppins, sans-serif', fontSize: 13, color: 'var(--ink-muted)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 0', marginBottom: 48 }}
-          >
-            <ArrowLeft size={14} /> Back
-          </button>
-
           {/* Header */}
           <motion.div
             style={{ textAlign: 'center', marginBottom: 48 }}
