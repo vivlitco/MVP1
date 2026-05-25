@@ -226,15 +226,18 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen" style={{ background: 'var(--bg-page)' }}>
       <Navbar />
-      
+
       <main className="container mx-auto px-4 pt-24 pb-12">
         <motion.div className="mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="font-heading text-3xl md:text-4xl font-bold text-foreground">
-            Welcome back, {user.user_metadata?.full_name?.split(' ')[0] || 'Friend'}! ✨
+          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(26px,3.5vw,36px)', fontWeight: 700, color: 'var(--ink-primary)', margin: '0 0 8px' }}>
+            Welcome back,{' '}
+            <span style={{ fontFamily: "'Dancing Script', cursive", color: 'var(--accent-plum)' }}>
+              {user.user_metadata?.full_name?.split(' ')[0] || 'Friend'}
+            </span>
           </h1>
-          <p className="text-muted-foreground mt-2">Ready to create something special?</p>
+          <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 14, color: 'var(--ink-muted)', margin: 0 }}>Ready to create something special?</p>
         </motion.div>
 
         {/* Quick stats */}
@@ -268,24 +271,24 @@ const Dashboard = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
         >
-          <Card className="border-none shadow-soft bg-gradient-to-r from-primary/10 to-accent/10 hover:shadow-float transition-all">
+          <Card className="border-none shadow-soft hover:shadow-float transition-all" style={{ background: 'white', border: '1px solid rgba(180,155,130,0.16)' }}>
             <CardContent className="flex items-center justify-between py-6">
               <div>
                 <h2 className="font-heading text-xl font-semibold">Create a new jar</h2>
                 <p className="text-muted-foreground text-sm">Fill it with love</p>
               </div>
-              <Button onClick={() => navigate('/create-jar')} className="bg-gradient-to-r from-primary to-accent hover:opacity-90">
+              <Button onClick={() => navigate('/create-jar')} className="hover:opacity-90" style={{ background: 'var(--accent-plum)', color: 'white', border: 'none' }}>
                 <Plus className="w-4 h-4 mr-2" /> New Jar
               </Button>
             </CardContent>
           </Card>
-          <Card className="border-none shadow-soft bg-gradient-to-r from-accent/10 to-primary/10 hover:shadow-float transition-all">
+          <Card className="border-none shadow-soft hover:shadow-float transition-all" style={{ background: 'white', border: '1px solid rgba(180,155,130,0.16)' }}>
             <CardContent className="flex items-center justify-between py-6">
               <div>
                 <h2 className="font-heading text-xl font-semibold">Send an e-card</h2>
                 <p className="text-muted-foreground text-sm">Beautiful animated greeting</p>
               </div>
-              <Button onClick={() => navigate('/create-card')} className="bg-gradient-to-r from-accent to-primary hover:opacity-90">
+              <Button onClick={() => navigate('/create-card')} className="hover:opacity-90" style={{ background: 'var(--accent-plum)', color: 'white', border: 'none' }}>
                 <Mail className="w-4 h-4 mr-2" /> New Card
               </Button>
             </CardContent>
@@ -321,7 +324,7 @@ const Dashboard = () => {
                   </div>
                   <h3 className="font-heading text-lg font-medium mb-2">No jars yet</h3>
                   <p className="text-muted-foreground mb-4">Create your first jar to share heartfelt messages.</p>
-                  <Button onClick={() => navigate('/create-jar')} className="bg-gradient-to-r from-primary to-accent hover:opacity-90">
+                  <Button onClick={() => navigate('/create-jar')} className="hover:opacity-90" style={{ background: 'var(--accent-plum)', color: 'white', border: 'none' }}>
                     <Plus className="w-4 h-4 mr-2" /> Create Your First Jar
                   </Button>
                 </CardContent>
@@ -344,7 +347,7 @@ const Dashboard = () => {
                   </div>
                   <h3 className="font-heading text-lg font-medium mb-2">No cards yet</h3>
                   <p className="text-muted-foreground mb-4">Create your first e-card to send a beautiful animated greeting.</p>
-                  <Button onClick={() => navigate('/create-card')} className="bg-gradient-to-r from-accent to-primary hover:opacity-90">
+                  <Button onClick={() => navigate('/create-card')} className="hover:opacity-90" style={{ background: 'var(--accent-plum)', color: 'white', border: 'none' }}>
                     <Mail className="w-4 h-4 mr-2" /> Create Your First Card
                   </Button>
                 </CardContent>

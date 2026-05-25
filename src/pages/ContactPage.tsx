@@ -5,9 +5,8 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Mail, Send, Instagram, Linkedin, Youtube, CheckCircle, Heart, ArrowLeft } from 'lucide-react';
+import { Mail, Send, Instagram, Linkedin, CheckCircle, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,6 +18,14 @@ const contactSchema = z.object({
   message: z.string().trim().min(1, 'Message is required').max(2000),
 });
 
+const card = {
+  background: 'white',
+  border: '1px solid rgba(180,155,130,0.18)',
+  borderRadius: 16,
+  padding: 28,
+  boxShadow: '0 2px 16px rgba(120,80,100,0.06)',
+};
+
 const ContactPage = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
@@ -29,7 +36,6 @@ const ContactPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
-
     const result = contactSchema.safeParse(form);
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
@@ -39,15 +45,12 @@ const ContactPage = () => {
       setErrors(fieldErrors);
       return;
     }
-
     setSending(true);
     try {
-      const { error } = await supabase.functions.invoke('contact-form', {
-        body: result.data,
-      });
+      const { error } = await supabase.functions.invoke('contact-form', { body: result.data });
       if (error) throw error;
       setSubmitted(true);
-      toast.success('Message sent successfully! 💌');
+      toast.success('Message sent successfully!');
     } catch (err) {
       console.error('Contact form error:', err);
       toast.error('Failed to send message. Please try again.');
@@ -58,135 +61,184 @@ const ContactPage = () => {
 
   if (submitted) {
     return (
-      <main className="min-h-screen bg-background">
+      <div style={{ minHeight: '100vh', background: 'var(--bg-page)' }}>
         <Navbar />
-        <section className="pt-28 pb-20 px-4 flex items-center justify-center min-h-[80vh]">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', padding: 24 }}>
           <motion.div
-            className="text-center space-y-6 max-w-md"
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.94 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.6, ease: [0.25, 0.1, 0.08, 1] }}
+            style={{ textAlign: 'center', maxWidth: 420 }}
           >
-            <div className="w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto shadow-glow">
-              <CheckCircle className="w-10 h-10 text-white" />
+            <div style={{ width: 72, height: 72, background: 'var(--accent-plum)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+              <CheckCircle size={34} color="white" />
             </div>
-            <h2 className="text-3xl font-heading font-bold">
-              Message <span className="gradient-text">Sent!</span>
+            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 32, fontWeight: 700, color: 'var(--ink-primary)', margin: '0 0 14px' }}>
+              Message{' '}
+              <span style={{ fontFamily: "'Dancing Script', cursive", color: 'var(--accent-plum)' }}>sent</span>
             </h2>
-            <p className="text-muted-foreground">
-              Thank you for reaching out! We'll get back to you as soon as possible. 💜
+            <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 15, color: 'var(--ink-muted)', lineHeight: 1.7, margin: '0 0 32px' }}>
+              Thank you for reaching out. We'll get back to you within 24 hours.
             </p>
-            <div className="flex gap-3 justify-center">
-              <Button onClick={() => { setSubmitted(false); setForm({ name: '', email: '', subject: '', message: '' }); }} variant="outline">
-                Send Another Message
-              </Button>
-              <Button onClick={() => navigate('/')} variant="ghost">
-                Back to Home
-              </Button>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => { setSubmitted(false); setForm({ name: '', email: '', subject: '', message: '' }); }}
+                style={{ fontFamily: 'Poppins, sans-serif', fontSize: 13, color: 'var(--ink-secondary)', background: 'transparent', border: '1px solid rgba(180,155,130,0.3)', borderRadius: 8, padding: '10px 20px', cursor: 'pointer' }}
+              >
+                Send another
+              </button>
+              <button
+                onClick={() => navigate('/')}
+                style={{ fontFamily: 'Poppins, sans-serif', fontSize: 13, fontWeight: 500, color: 'white', background: 'var(--accent-plum)', border: 'none', borderRadius: 8, padding: '10px 20px', cursor: 'pointer' }}
+              >
+                Back to home
+              </button>
             </div>
           </motion.div>
-        </section>
+        </div>
         <Footer />
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-background">
+    <div style={{ minHeight: '100vh', background: 'var(--bg-page)' }}>
       <Navbar />
 
-      <section className="pt-24 pb-20 px-4">
-        <div className="container mx-auto max-w-5xl">
-          {/* Back button */}
-          <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
+      <main style={{ maxWidth: 1024, margin: '0 auto', padding: '96px 24px 80px' }}>
+        <button
+          onClick={() => navigate(-1)}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Poppins, sans-serif', fontSize: 13, color: 'var(--ink-muted)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 0', marginBottom: 48 }}
+        >
+          <ArrowLeft size={14} /> Back
+        </button>
 
-          <motion.div
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.1, ease: [0.25, 0.1, 0.08, 1] }}
+          style={{ marginBottom: 56 }}
+        >
+          <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 11, fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 16 }}>
+            Say hello
+          </p>
+          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(32px,5vw,52px)', fontWeight: 700, color: 'var(--ink-primary)', margin: '0 0 18px', lineHeight: 1.2 }}>
+            Get in{' '}
+            <span style={{ fontFamily: "'Dancing Script', cursive", color: 'var(--accent-plum)' }}>touch</span>
+          </h1>
+          <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 16, color: 'var(--ink-secondary)', lineHeight: 1.75, margin: 0, maxWidth: 520 }}>
+            Have a question, feedback, or just want to say hello? We'd love to hear from you.
+          </p>
+        </motion.div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 320px', gap: 32, alignItems: 'start' }}
+          className="contact-grid"
+        >
+          {/* Form */}
+          <motion.form
+            onSubmit={handleSubmit}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2, ease: [0.25, 0.1, 0.08, 1], duration: 0.8 }}
+            style={{ ...card, display: 'flex', flexDirection: 'column', gap: 20 }}
           >
-            <h1 className="text-4xl md:text-5xl font-heading font-bold mb-4">
-              Get in <span className="gradient-text">Touch</span>
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Have a question, feedback, or just want to say hello? We'd love to hear from you!
-            </p>
-          </motion.div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <Label htmlFor="name" style={{ fontFamily: 'Poppins, sans-serif', fontSize: 13, color: 'var(--ink-secondary)' }}>Name</Label>
+                <Input id="name" placeholder="Your name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={errors.name ? 'border-destructive' : ''} />
+                {errors.name && <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 11, color: '#e05c5c', margin: 0 }}>{errors.name}</p>}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <Label htmlFor="email" style={{ fontFamily: 'Poppins, sans-serif', fontSize: 13, color: 'var(--ink-secondary)' }}>Email</Label>
+                <Input id="email" type="email" placeholder="you@example.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={errors.email ? 'border-destructive' : ''} />
+                {errors.email && <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 11, color: '#e05c5c', margin: 0 }}>{errors.email}</p>}
+              </div>
+            </div>
 
-          <div className="grid lg:grid-cols-[1fr_360px] gap-12">
-            {/* Form */}
-            <motion.form
-              onSubmit={handleSubmit}
-              className="bg-card rounded-3xl p-8 border border-border/50 shadow-soft space-y-6"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <Label htmlFor="subject" style={{ fontFamily: 'Poppins, sans-serif', fontSize: 13, color: 'var(--ink-secondary)' }}>Subject</Label>
+              <Input id="subject" placeholder="What's this about?" value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} className={errors.subject ? 'border-destructive' : ''} />
+              {errors.subject && <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 11, color: '#e05c5c', margin: 0 }}>{errors.subject}</p>}
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <Label htmlFor="message" style={{ fontFamily: 'Poppins, sans-serif', fontSize: 13, color: 'var(--ink-secondary)' }}>Message</Label>
+              <Textarea id="message" placeholder="Tell us what's on your mind..." rows={6} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className={errors.message ? 'border-destructive' : ''} />
+              {errors.message && <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 11, color: '#e05c5c', margin: 0 }}>{errors.message}</p>}
+            </div>
+
+            <button
+              type="submit"
+              disabled={sending}
+              style={{
+                fontFamily: 'Poppins, sans-serif',
+                fontSize: 14,
+                fontWeight: 500,
+                color: 'white',
+                background: sending ? 'rgba(140,90,180,0.5)' : 'var(--accent-plum)',
+                border: 'none',
+                borderRadius: 8,
+                padding: '13px 24px',
+                cursor: sending ? 'not-allowed' : 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                transition: 'opacity 0.2s ease',
+              }}
+              onMouseEnter={(e) => { if (!sending) e.currentTarget.style.opacity = '0.82'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
             >
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Name</Label>
-                  <Input id="name" placeholder="Your name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={errors.name ? 'border-destructive' : ''} aria-invalid={!!errors.name} aria-describedby={errors.name ? 'name-error' : undefined} />
-                  {errors.name && <p id="name-error" className="text-xs text-destructive">{errors.name}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="you@example.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={errors.email ? 'border-destructive' : ''} aria-invalid={!!errors.email} aria-describedby={errors.email ? 'email-error' : undefined} />
-                  {errors.email && <p id="email-error" className="text-xs text-destructive">{errors.email}</p>}
-                </div>
-              </div>
+              {sending ? '✨ Sending…' : <><Send size={15} /> Send Message</>}
+            </button>
+          </motion.form>
 
-              <div className="space-y-2">
-                <Label htmlFor="subject">Subject</Label>
-                <Input id="subject" placeholder="What's this about?" value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} className={errors.subject ? 'border-destructive' : ''} aria-invalid={!!errors.subject} />
-                {errors.subject && <p className="text-xs text-destructive">{errors.subject}</p>}
+          {/* Sidebar */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3, ease: [0.25, 0.1, 0.08, 1], duration: 0.8 }}
+            style={{ display: 'flex', flexDirection: 'column', gap: 16 }}
+          >
+            <div style={card}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <Mail size={16} style={{ color: 'var(--accent-plum)' }} />
+                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, fontWeight: 600, color: 'var(--ink-primary)', margin: 0 }}>Email us</h3>
               </div>
+              <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 13, color: 'var(--ink-muted)', margin: 0 }}>hello@vivlit.com</p>
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="message">Message</Label>
-                <Textarea id="message" placeholder="Tell us what's on your mind..." rows={6} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className={errors.message ? 'border-destructive' : ''} aria-invalid={!!errors.message} />
-                {errors.message && <p className="text-xs text-destructive">{errors.message}</p>}
+            <div style={card}>
+              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, fontWeight: 600, color: 'var(--ink-primary)', margin: '0 0 16px' }}>Follow us</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <a href="https://www.instagram.com/vivlit.co/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'var(--ink-secondary)', fontFamily: 'Poppins, sans-serif', fontSize: 13, transition: 'opacity 0.2s ease' }} onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.6')} onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}>
+                  <Instagram size={15} /> @vivlit.co
+                </a>
+                <a href="https://www.linkedin.com/company/vivlit" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'var(--ink-secondary)', fontFamily: 'Poppins, sans-serif', fontSize: 13, transition: 'opacity 0.2s ease' }} onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.6')} onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}>
+                  <Linkedin size={15} /> Vivlit
+                </a>
               </div>
+            </div>
 
-              <Button type="submit" disabled={sending} className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground gap-2" size="lg">
-                {sending ? <span className="animate-spin">✨</span> : <><Send className="w-4 h-4" /> Send Message</>}
-              </Button>
-            </motion.form>
-
-            {/* Contact info sidebar */}
-            <motion.div className="space-y-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
-              <div className="bg-card rounded-2xl p-6 border border-border/50 shadow-soft">
-                <h3 className="font-heading font-semibold mb-4 flex items-center gap-2">
-                  <Mail className="w-5 h-5 text-primary" /> Email Us
-                </h3>
-                <p className="text-muted-foreground text-sm">hello@vivlit.com</p>
-              </div>
-
-              <div className="bg-card rounded-2xl p-6 border border-border/50 shadow-soft">
-                <h3 className="font-heading font-semibold mb-4 flex items-center gap-2">
-                  <Heart className="w-5 h-5 text-primary" /> Follow Us
-                </h3>
-                <div className="space-y-3">
-                  <a href="#" className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors text-sm" aria-label="Instagram"><Instagram className="w-4 h-4" /> @vivlit.official</a>
-                  <a href="#" className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors text-sm" aria-label="LinkedIn"><Linkedin className="w-4 h-4" /> Vivlit</a>
-                  <a href="#" className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors text-sm" aria-label="YouTube"><Youtube className="w-4 h-4" /> Vivlit</a>
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl p-6 border border-primary/20">
-                <p className="text-sm text-foreground text-center">
-                  We typically respond within <strong>24 hours</strong> 💌
-                </p>
-              </div>
-            </motion.div>
-          </div>
+            <div
+              style={{
+                background: 'rgba(140,90,180,0.05)',
+                border: '1px solid rgba(140,90,180,0.14)',
+                borderRadius: 16,
+                padding: 24,
+                textAlign: 'center',
+              }}
+            >
+              <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 13, color: 'var(--ink-secondary)', margin: 0, lineHeight: 1.7 }}>
+                We typically respond within <strong style={{ color: 'var(--ink-primary)' }}>24 hours</strong>
+              </p>
+            </div>
+          </motion.div>
         </div>
-      </section>
+      </main>
 
       <Footer />
-    </main>
+    </div>
   );
 };
 

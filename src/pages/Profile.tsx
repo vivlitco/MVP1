@@ -91,53 +91,54 @@ const Profile = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen" style={{ background: 'var(--bg-page)' }}>
       <Navbar />
-      
+
       <main className="container mx-auto px-4 pt-24 pb-12 max-w-2xl">
-        <Button variant="ghost" onClick={() => navigate('/dashboard')} className="mb-6">
-          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
-        </Button>
+        <button
+          onClick={() => navigate('/dashboard')}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Poppins, sans-serif', fontSize: 13, color: 'var(--ink-muted)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 0', marginBottom: 28 }}
+        >
+          <ArrowLeft size={14} /> Back to Dashboard
+        </button>
 
         {/* Profile Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <Card className="border-none shadow-float mb-6 overflow-hidden">
-            <div className="h-28 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 relative">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,hsl(var(--primary)/0.15),transparent_60%)]" />
-            </div>
-            <CardContent className="-mt-14 pb-6">
-              <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4">
-                <Avatar className="h-24 w-24 border-4 border-background shadow-lg ring-2 ring-primary/10">
-                  <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground text-2xl font-bold">
+          <div style={{ background: 'white', border: '1px solid rgba(180,155,130,0.18)', borderRadius: 20, overflow: 'hidden', marginBottom: 20, boxShadow: '0 2px 20px rgba(120,80,100,0.07)' }}>
+            <div style={{ height: 96, background: 'linear-gradient(135deg, rgba(140,90,180,0.12) 0%, rgba(200,120,150,0.08) 100%)' }} />
+            <div style={{ padding: '0 24px 24px', marginTop: -48 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+                <Avatar className="h-24 w-24" style={{ border: '3px solid white', boxShadow: '0 2px 12px rgba(120,80,100,0.14)' }}>
+                  <AvatarFallback style={{ background: 'var(--accent-plum)', color: 'white', fontSize: 22, fontWeight: 600, fontFamily: 'Poppins, sans-serif' }}>
                     {getInitials()}
                   </AvatarFallback>
                 </Avatar>
-                <div className="text-center sm:text-left flex-1">
-                  <h1 className="font-heading text-2xl font-bold text-foreground">
+                <div style={{ textAlign: 'center' }}>
+                  <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 24, fontWeight: 700, color: 'var(--ink-primary)', margin: '0 0 4px' }}>
                     {user.user_metadata?.full_name || 'Lovely Human'}
                   </h1>
-                  <p className="text-muted-foreground">{user.email}</p>
+                  <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 13, color: 'var(--ink-muted)', margin: 0 }}>{user.email}</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </motion.div>
 
         {/* Stats */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <div className="grid grid-cols-3 gap-3 mb-6">
-            {statItems.map((item, i) => (
+            {statItems.map((item) => (
               <motion.div
                 key={item.label}
-                className={`p-4 rounded-2xl bg-gradient-to-br ${item.gradient} cursor-pointer border border-border/20`}
-                whileHover={{ scale: 1.05, y: -2 }}
+                style={{ padding: 16, borderRadius: 14, background: 'white', border: '1px solid rgba(180,155,130,0.16)', cursor: 'pointer', boxShadow: '0 1px 8px rgba(120,80,100,0.05)' }}
+                whileHover={{ scale: 1.04, y: -2 }}
                 onClick={() => navigate('/dashboard')}
               >
-                <item.icon className="w-5 h-5 text-primary mb-2" />
-                <p className="text-2xl font-bold text-foreground">
-                  {loadingStats ? '...' : item.value}
+                <item.icon className="w-5 h-5 mb-2" style={{ color: 'var(--accent-plum)' }} />
+                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 24, fontWeight: 700, color: 'var(--ink-primary)', margin: '0 0 2px' }}>
+                  {loadingStats ? '—' : item.value}
                 </p>
-                <p className="text-xs text-muted-foreground">{item.label}</p>
+                <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 11, color: 'var(--ink-muted)', margin: 0 }}>{item.label}</p>
               </motion.div>
             ))}
           </div>

@@ -40,45 +40,59 @@ const GalleryPage = () => {
     : galleryItems.filter(i => i.category === activeCategory);
 
   return (
-    <main className="min-h-screen bg-background">
+    <div style={{ minHeight: '100vh', background: 'var(--bg-page)' }}>
       <Navbar />
 
-      <section className="pt-24 pb-20 px-4">
-        <div className="container mx-auto">
+      <section style={{ padding: '96px 24px 80px', maxWidth: 1100, margin: '0 auto' }}>
           {/* Back button */}
-          <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
+          <button
+            onClick={() => navigate(-1)}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Poppins, sans-serif', fontSize: 13, color: 'var(--ink-muted)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 0', marginBottom: 48 }}
+          >
+            <ArrowLeft size={14} /> Back
+          </button>
 
           {/* Header */}
           <motion.div
-            className="text-center mb-12"
+            style={{ textAlign: 'center', marginBottom: 48 }}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.9, ease: [0.25, 0.1, 0.08, 1] }}
           >
-            <h1 className="text-4xl md:text-5xl font-heading font-bold mb-4">
-              Jar <span className="gradient-text">Gallery</span>
+            <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 11, fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--ink-muted)', marginBottom: 16 }}>
+              Inspiration
+            </p>
+            <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(32px,5vw,52px)', fontWeight: 700, color: 'var(--ink-primary)', margin: '0 0 16px', lineHeight: 1.2 }}>
+              Jar{' '}
+              <span style={{ fontFamily: "'Dancing Script', cursive", color: 'var(--accent-plum)' }}>
+                Gallery
+              </span>
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 16, color: 'var(--ink-secondary)', margin: 0, maxWidth: 460, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.7 }}>
               Get inspired by beautiful jar creations from our community
             </p>
           </motion.div>
 
           {/* Category filter */}
-          <div className="flex flex-wrap gap-2 justify-center mb-12" role="tablist" aria-label="Filter gallery by category">
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 48 }} role="tablist" aria-label="Filter gallery by category">
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
                 role="tab"
                 aria-selected={activeCategory === cat}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  activeCategory === cat
-                    ? 'bg-primary text-primary-foreground shadow-soft'
-                    : 'bg-muted/50 text-muted-foreground hover:bg-muted'
-                }`}
+                style={{
+                  fontFamily: 'Poppins, sans-serif',
+                  fontSize: 13,
+                  fontWeight: activeCategory === cat ? 500 : 400,
+                  padding: '7px 16px',
+                  borderRadius: 24,
+                  border: activeCategory === cat ? '1px solid transparent' : '1px solid rgba(180,155,130,0.26)',
+                  background: activeCategory === cat ? 'var(--accent-plum)' : 'transparent',
+                  color: activeCategory === cat ? 'white' : 'var(--ink-muted)',
+                  cursor: 'pointer',
+                  transition: 'all 0.18s ease',
+                }}
               >
                 {cat}
               </button>
@@ -115,11 +129,10 @@ const GalleryPage = () => {
               </motion.div>
             ))}
           </div>
-        </div>
       </section>
 
       <Footer />
-    </main>
+    </div>
   );
 };
 

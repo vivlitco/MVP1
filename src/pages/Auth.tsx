@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
-import { Heart, Sparkles, ArrowLeft, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Sparkles, ArrowLeft, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { z } from 'zod';
 
 const emailSchema = z.string().email('Please enter a valid email address');
@@ -109,35 +109,65 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Soft background blobs */}
-      <div className="absolute top-16 left-8 w-48 h-48 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
-      <div className="absolute bottom-16 right-8 w-64 h-64 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
-
-      <div className="w-full max-w-sm relative z-10">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--bg-page)' }}>
+      <div className="w-full max-w-sm">
         <Link
           to="/"
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm mb-8 transition-colors"
+          style={{ color: 'var(--ink-muted)', textDecoration: 'none' }}
         >
           <ArrowLeft size={15} />
           Back to home
         </Link>
 
-        <div className="bg-card border border-border/50 rounded-2xl shadow-lg p-8">
-          {/* Logo mark */}
-          <div className="flex justify-center mb-6">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-md">
-              <Heart className="w-7 h-7 text-white" fill="currentColor" />
-            </div>
+        <div
+          style={{
+            background: 'white',
+            border: '1px solid rgba(180,155,130,0.18)',
+            borderRadius: 20,
+            boxShadow: '0 4px 32px rgba(120,80,100,0.08)',
+            padding: 36,
+          }}
+        >
+          {/* Logo */}
+          <div style={{ textAlign: 'center', marginBottom: 24 }}>
+            <Link to="/" style={{ textDecoration: 'none' }}>
+              <span
+                style={{
+                  fontFamily: "'Dancing Script', cursive",
+                  fontSize: 40,
+                  fontWeight: 700,
+                  color: 'var(--ink-primary)',
+                  lineHeight: 1,
+                }}
+              >
+                Vivlit
+              </span>
+            </Link>
           </div>
 
-          <h1 className="text-2xl font-heading font-semibold text-center text-foreground mb-1">
+          <h1
+            style={{
+              fontFamily: "'Playfair Display', serif",
+              fontSize: 22,
+              fontWeight: 600,
+              color: 'var(--ink-primary)',
+              textAlign: 'center',
+              margin: '0 0 6px',
+            }}
+          >
             {isLogin ? 'Welcome back' : 'Create account'}
           </h1>
-          <p className="text-sm text-muted-foreground text-center mb-8">
-            {isLogin
-              ? 'Sign in to your Vivlit account'
-              : 'Start creating heartfelt moments'}
+          <p
+            style={{
+              fontFamily: 'Poppins, sans-serif',
+              fontSize: 13,
+              color: 'var(--ink-muted)',
+              textAlign: 'center',
+              margin: '0 0 28px',
+            }}
+          >
+            {isLogin ? 'Sign in to continue' : 'Start creating heartfelt moments'}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
@@ -217,7 +247,8 @@ const Auth = () => {
 
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity font-medium h-10 mt-2"
+              className="w-full font-medium h-10 mt-2 hover:opacity-90 transition-opacity"
+              style={{ background: 'var(--accent-plum)', color: 'white', border: 'none' }}
               disabled={isLoading}
             >
               {isLoading ? (
@@ -248,3 +279,4 @@ const Auth = () => {
 };
 
 export default Auth;
+
