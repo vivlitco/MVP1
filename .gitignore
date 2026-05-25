@@ -26,6 +26,4 @@ dist-ssr
 temp/
 .kiro/
 .vscode/
-
-temp/vivlit-light-up-moments-main/
 .agents
