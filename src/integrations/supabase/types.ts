@@ -14,6 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
+      cards: {
+        Row: {
+          audio_url: string | null
+          cover_image_url: string | null
+          cover_preset: string
+          created_at: string
+          ghost_session_id: string | null
+          id: string
+          is_opened: boolean
+          message: string
+          recipient_name: string | null
+          sender_name: string | null
+          share_token: string
+          theme: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          audio_url?: string | null
+          cover_image_url?: string | null
+          cover_preset?: string
+          created_at?: string
+          ghost_session_id?: string | null
+          id?: string
+          is_opened?: boolean
+          message?: string
+          recipient_name?: string | null
+          sender_name?: string | null
+          share_token?: string
+          theme?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          audio_url?: string | null
+          cover_image_url?: string | null
+          cover_preset?: string
+          created_at?: string
+          ghost_session_id?: string | null
+          id?: string
+          is_opened?: boolean
+          message?: string
+          recipient_name?: string | null
+          sender_name?: string | null
+          share_token?: string
+          theme?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      contact_submissions: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          subject: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          subject: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          subject?: string
+        }
+        Relationships: []
+      }
       ghost_accounts: {
         Row: {
           converted_at: string | null
@@ -113,6 +191,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "jar_charms_jar_id_fkey"
+            columns: ["jar_id"]
+            isOneToOne: false
+            referencedRelation: "jars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jar_contributors: {
+        Row: {
+          contributor_email: string | null
+          contributor_name: string | null
+          created_at: string
+          id: string
+          invite_token: string
+          jar_id: string
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          contributor_email?: string | null
+          contributor_name?: string | null
+          created_at?: string
+          id?: string
+          invite_token?: string
+          jar_id: string
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          contributor_email?: string | null
+          contributor_name?: string | null
+          created_at?: string
+          id?: string
+          invite_token?: string
+          jar_id?: string
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jar_contributors_jar_id_fkey"
             columns: ["jar_id"]
             isOneToOne: false
             referencedRelation: "jars"
@@ -281,8 +400,10 @@ export type Database = {
       jars: {
         Row: {
           created_at: string
+          delivery_scheduled_for: string | null
           ghost_session_id: string | null
           id: string
+          is_collaborative: boolean
           is_password_protected: boolean | null
           name: string
           open_mode: string
@@ -291,13 +412,16 @@ export type Database = {
           recipient_name: string | null
           share_token: string
           theme: string
+          unlock_date: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          delivery_scheduled_for?: string | null
           ghost_session_id?: string | null
           id?: string
+          is_collaborative?: boolean
           is_password_protected?: boolean | null
           name?: string
           open_mode?: string
@@ -306,13 +430,16 @@ export type Database = {
           recipient_name?: string | null
           share_token?: string
           theme?: string
+          unlock_date?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          delivery_scheduled_for?: string | null
           ghost_session_id?: string | null
           id?: string
+          is_collaborative?: boolean
           is_password_protected?: boolean | null
           name?: string
           open_mode?: string
@@ -321,6 +448,7 @@ export type Database = {
           recipient_name?: string | null
           share_token?: string
           theme?: string
+          unlock_date?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -362,8 +490,20 @@ export type Database = {
         Args: { p_session_id: string; p_user_id: string }
         Returns: undefined
       }
+      get_jar_id_by_contributor_token: {
+        Args: { p_token: string }
+        Returns: string
+      }
       hash_jar_password: { Args: { p_password: string }; Returns: string }
+      is_jar_contributor: {
+        Args: { p_jar_id: string; p_user_id: string }
+        Returns: boolean
+      }
       is_jar_owner_or_creator: {
+        Args: { p_jar_id: string; p_user_id: string }
+        Returns: boolean
+      }
+      is_jar_shared_to_user: {
         Args: { p_jar_id: string; p_user_id: string }
         Returns: boolean
       }

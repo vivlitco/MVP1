@@ -5,12 +5,8 @@ import { createClient } from "@supabase/supabase-js";
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+const APP_ORIGIN = Deno.env.get("APP_ORIGIN") || "https://vivlit.com";
+const ALLOWED_ORIGINS = APP_ORIGIN.split(",").map((o) => o.trim());
 
 interface JarEmailRequest {
   recipientEmail: string;
@@ -38,6 +34,17 @@ function isValidEmail(email: string): boolean {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  // Build per-request CORS headers scoped to the actual request origin
+  const requestOrigin = req.headers.get("origin") || "";
+  const allowedOrigin = ALLOWED_ORIGINS.includes(requestOrigin)
+    ? requestOrigin
+    : ALLOWED_ORIGINS[0];
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type",
+  };
+
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -148,8 +155,8 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // Build the secure share URL using the jar's share_token
-    const baseUrl = req.headers.get("origin") || "https://vivlit.com";
+    // Build the secure share URL using the canonical app origin (not request origin)
+    const baseUrl = ALLOWED_ORIGINS[0];
     const shareUrl = `${baseUrl}/jar/${jar.share_token}`;
 
     // Escape all user inputs to prevent HTML/script injection
