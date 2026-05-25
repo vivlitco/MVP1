@@ -15,7 +15,7 @@ import MagicSparkles from '@/components/ui/MagicSparkles';
 import { NoteEditor, NoteItem } from '@/components/workspace/NoteEditor';
 import { CharmsPalette, CharmItem } from '@/components/workspace/CharmsPalette';
 import { JarSettings } from '@/components/workspace/JarSettings';
-import { JarPreview } from '@/components/workspace/JarPreview';
+import { JarPreview, JarSize } from '@/components/workspace/JarPreview';
 
 import { 
   Sparkles, MessageSquare, Palette, Settings, Gift, Check, Heart, X, Type, Image as ImageIcon, Mic, Link2
@@ -31,6 +31,10 @@ const CreateJar = () => {
   const [recipientName, setRecipientName] = useState('');
   const [theme, setTheme] = useState('lavender');
   const [openMode, setOpenMode] = useState<'daily' | 'unlimited'>('daily');
+  const [jarSize, setJarSize] = useState<JarSize>('medium');
+  const [ribbonColor, setRibbonColor] = useState('');
+  const [labelText, setLabelText] = useState('');
+  const [unlockDate, setUnlockDate] = useState<Date | undefined>(undefined);
   
   // Content
   const [notes, setNotes] = useState<NoteItem[]>([]);
@@ -86,11 +90,12 @@ const CreateJar = () => {
   };
 
   const addCharm = (type: string) => {
+    // Constrain charms within jar body (roughly 18%-82% x, 22%-90% y)
     const newCharm: CharmItem = {
       id: crypto.randomUUID(),
       type,
-      position_x: -20 + Math.random() * 140,
-      position_y: -10 + Math.random() * 120,
+      position_x: 20 + Math.random() * 60,
+      position_y: 25 + Math.random() * 60,
       rotation: Math.random() * 30 - 15,
     };
     setCharms([...charms, newCharm]);
@@ -162,6 +167,7 @@ const CreateJar = () => {
         open_mode: openMode,
         is_password_protected: enablePassword,
         password_hash: passwordHash,
+        unlock_date: unlockDate ? unlockDate.toISOString() : null,
       };
 
       if (user) {
@@ -277,6 +283,18 @@ const CreateJar = () => {
       
       <main className="pt-20 pb-8 px-4 relative z-10">
         <div className="max-w-7xl mx-auto">
+          {/* Back button */}
+          <Button
+            variant="ghost"
+            onClick={() => navigate(user ? '/dashboard' : '/')}
+            className="mb-2"
+          >
+            <X className="w-4 h-4 mr-2" style={{ display: 'none' }} />
+            <span className="flex items-center gap-2">
+              ← {user ? 'Dashboard' : 'Home'}
+            </span>
+          </Button>
+
           {/* Header */}
           <motion.div 
             className="text-center mb-8"
@@ -401,6 +419,14 @@ const CreateJar = () => {
                         showPassword={showPassword}
                         setShowPassword={setShowPassword}
                         isGhost={isGhost}
+                        jarSize={jarSize}
+                        setJarSize={setJarSize}
+                        ribbonColor={ribbonColor}
+                        setRibbonColor={setRibbonColor}
+                        labelText={labelText}
+                        setLabelText={setLabelText}
+                        unlockDate={unlockDate}
+                        setUnlockDate={setUnlockDate}
                       />
                     </TabsContent>
                   </div>
@@ -418,6 +444,9 @@ const CreateJar = () => {
                     theme={theme}
                     jarName={jarName}
                     recipientName={recipientName}
+                    jarSize={jarSize}
+                    ribbonColor={ribbonColor}
+                    labelText={labelText}
                   />
                 </div>
 
@@ -467,6 +496,10 @@ const CreateJar = () => {
                       <span className="font-medium">{charms.length}</span>
                     </div>
                     <div className="flex justify-between py-2 border-b border-border/30">
+                      <span className="text-muted-foreground">Size</span>
+                      <span className="font-medium capitalize">{jarSize}</span>
+                    </div>
+                    <div className="flex justify-between py-2 border-b border-border/30">
                       <span className="text-muted-foreground">Theme</span>
                       <span className="font-medium capitalize">{theme}</span>
                     </div>
@@ -474,6 +507,18 @@ const CreateJar = () => {
                       <span className="text-muted-foreground">Opening</span>
                       <span className="font-medium capitalize">{openMode}</span>
                     </div>
+                    {ribbonColor && (
+                      <div className="flex justify-between py-2 border-b border-border/30">
+                        <span className="text-muted-foreground">Ribbon</span>
+                        <div className="w-4 h-4 rounded-full border" style={{ backgroundColor: ribbonColor }} />
+                      </div>
+                    )}
+                    {labelText && (
+                      <div className="flex justify-between py-2 border-b border-border/30">
+                        <span className="text-muted-foreground">Label</span>
+                        <span className="font-medium text-xs truncate max-w-[120px]">{labelText}</span>
+                      </div>
+                    )}
                     {enablePassword && (
                       <div className="flex justify-between py-2">
                         <span className="text-muted-foreground">Password</span>

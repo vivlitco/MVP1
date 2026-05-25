@@ -10,8 +10,10 @@ import { toast } from 'sonner';
 import { Gift, Sparkles, Copy, Check, Lock, X, ArrowLeft, Home, Image, Mic, Link2, Eye, EyeOff, LogIn, Heart } from 'lucide-react';
 import JarVisual from '@/components/JarVisual';
 import { Charms } from '@/components/Charms';
+import CountdownTimer from '@/components/CountdownTimer';
 import { getThemeColors } from '@/lib/themes';
-import { fireSparkles, fireHearts } from '@/lib/confetti';
+import { fireSparkles, fireHearts, fireNoteReveal } from '@/lib/confetti';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Jar {
   id: string;
@@ -22,6 +24,7 @@ interface Jar {
   user_id: string;
   password_hash: string | null;
   is_password_protected: boolean | null;
+  unlock_date: string | null;
 }
 
 interface JarNote {
@@ -91,7 +94,7 @@ const ViewJar = () => {
       // Only select non-sensitive fields - exclude recipient_email, recipient_name, ghost_session_id
       const { data: jarData, error: jarError } = await supabase
         .from('jars')
-        .select('id, name, theme, share_token, open_mode, user_id, password_hash, is_password_protected, created_at, updated_at')
+        .select('id, name, theme, share_token, open_mode, user_id, password_hash, is_password_protected, unlock_date, created_at, updated_at')
         .eq('share_token', token)
         .maybeSingle();
 
@@ -341,6 +344,7 @@ const ViewJar = () => {
     // If already opened by this user, just show it again
     if (openedNoteIds.has(note.id)) {
       setRevealedNote(note);
+      fireNoteReveal();
       fireSparkles(window.innerWidth / 2, window.innerHeight / 3);
       return;
     }
@@ -392,7 +396,8 @@ const ViewJar = () => {
         setSelectedNote(null);
         
         // Celebration animation
-        fireHearts();
+        fireNoteReveal();
+        setTimeout(() => fireHearts(), 400);
       } catch (error: any) {
         toast.error('Failed to open note');
         setSelectedNote(null);
@@ -598,11 +603,37 @@ const ViewJar = () => {
     );
   }
 
+  // Time-lock check
+  const isTimeLocked = jar.unlock_date && new Date(jar.unlock_date) > new Date();
+  const isCreator = user?.id === jar.user_id;
+
+  if (isTimeLocked && !isCreator) {
+    const themeColors = getThemeColors(jar.theme);
+    return (
+      <div className={`min-h-screen bg-gradient-to-br ${themeColors} p-4`}>
+        <div className="max-w-lg mx-auto pt-4">
+          <div className="flex items-center justify-between mb-6">
+            <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="text-foreground/80 hover:text-foreground hover:bg-background/50">
+              <ArrowLeft className="w-4 h-4 mr-1" /> Back
+            </Button>
+          </div>
+          <div className="text-center mb-6 animate-fade-in">
+            <h1 className="font-heading text-2xl md:text-3xl font-bold text-foreground mb-2">{jar.name}</h1>
+          </div>
+          <Card className="border-none shadow-float">
+            <CardContent className="p-0">
+              <CountdownTimer unlockDate={jar.unlock_date!} jarName={jar.name} />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   const userOpenedNotes = notes.filter(n => openedNoteIds.has(n.id));
   const userUnopenedCount = notes.length - userOpenedNotes.length;
   const themeColors = getThemeColors(jar.theme);
   const isUnlimited = jar.open_mode === 'unlimited';
-  const isCreator = user?.id === jar.user_id;
 
   return (
     <div className={`min-h-screen bg-gradient-to-br ${themeColors} p-4`}>
@@ -644,78 +675,126 @@ const ViewJar = () => {
 
         {/* Revealed Note Modal */}
         {revealedNote && (
-          <div className="fixed inset-0 bg-foreground/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div 
-              className="max-w-md w-full animate-paper-unfold"
-              style={{ perspective: '1000px' }}
+          <AnimatePresence>
+            <motion.div
+              className="fixed inset-0 bg-foreground/40 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setRevealedNote(null)}
             >
-              <div 
-                className="relative bg-gradient-to-br from-amber-50 via-white to-orange-50 rounded-lg overflow-hidden"
-                style={{
-                  boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.05)',
-                  transformStyle: 'preserve-3d',
-                }}
+              <motion.div 
+                className="max-w-md w-full"
+                initial={{ opacity: 0, scale: 0.5, rotateX: 30, y: 60 }}
+                animate={{ opacity: 1, scale: 1, rotateX: 0, y: 0 }}
+                exit={{ opacity: 0, scale: 0.8, y: -40 }}
+                transition={{ type: 'spring', stiffness: 80, damping: 12 }}
+                style={{ perspective: '1200px' }}
+                onClick={(e) => e.stopPropagation()}
               >
                 <div 
-                  className="absolute inset-0 opacity-30"
+                  className="relative overflow-hidden rounded-xl"
                   style={{
-                    backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")',
+                    background: 'linear-gradient(135deg, hsl(40, 40%, 98%) 0%, hsl(35, 30%, 96%) 50%, hsl(330, 20%, 97%) 100%)',
+                    boxShadow: '0 30px 60px -12px hsl(var(--foreground) / 0.3), 0 0 0 1px hsl(var(--foreground) / 0.05), 0 0 80px hsl(var(--primary) / 0.1)',
                   }}
-                />
-                
-                <div className={`h-3 bg-gradient-to-r ${themeColors}`} />
-                
-                <div className="p-8 pt-6 text-center relative">
-                  <button 
-                    onClick={() => setRevealedNote(null)}
-                    className="absolute top-3 right-3 p-2 rounded-full hover:bg-foreground/10 transition-colors"
-                  >
-                    <X className="w-5 h-5 text-foreground/60" />
-                  </button>
+                >
+                  {/* Paper texture */}
+                  <div 
+                    className="absolute inset-0 opacity-20 pointer-events-none"
+                    style={{
+                      backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")',
+                    }}
+                  />
                   
-                  <div className="flex justify-center mb-4">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                      {revealedNote.content_type === 'image' ? (
-                        <Image className="w-6 h-6 text-primary" />
-                      ) : revealedNote.content_type === 'voice' ? (
-                        <Mic className="w-6 h-6 text-primary" />
-                      ) : revealedNote.content_type === 'link' ? (
-                        <Link2 className="w-6 h-6 text-primary" />
-                      ) : (
-                        <span className="text-2xl">💌</span>
-                      )}
-                    </div>
+                  {/* Gradient accent strip */}
+                  <motion.div 
+                    className={`h-2 bg-gradient-to-r ${themeColors}`}
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ delay: 0.2, duration: 0.5 }}
+                    style={{ transformOrigin: 'left' }}
+                  />
+                  
+                  <div className="p-8 pt-6 text-center relative">
+                    <button 
+                      onClick={() => setRevealedNote(null)}
+                      className="absolute top-3 right-3 p-2 rounded-full hover:bg-foreground/10 transition-colors"
+                    >
+                      <X className="w-5 h-5 text-foreground/60" />
+                    </button>
+                    
+                    <motion.div 
+                      className="flex justify-center mb-5"
+                      initial={{ scale: 0, rotate: -180 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ delay: 0.15, type: 'spring', stiffness: 200 }}
+                    >
+                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center shadow-md">
+                        {revealedNote.content_type === 'image' ? (
+                          <Image className="w-7 h-7 text-primary" />
+                        ) : revealedNote.content_type === 'voice' ? (
+                          <Mic className="w-7 h-7 text-primary" />
+                        ) : revealedNote.content_type === 'link' ? (
+                          <Link2 className="w-7 h-7 text-primary" />
+                        ) : (
+                          <span className="text-2xl">💌</span>
+                        )}
+                      </div>
+                    </motion.div>
+                    
+                    <motion.div 
+                      className="relative"
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3, duration: 0.5 }}
+                    >
+                      {renderNoteContent(revealedNote)}
+                    </motion.div>
+                    
+                    <motion.div 
+                      className="flex items-center justify-center gap-2 my-6 text-primary/40"
+                      initial={{ opacity: 0, scaleX: 0 }}
+                      animate={{ opacity: 1, scaleX: 1 }}
+                      transition={{ delay: 0.5 }}
+                    >
+                      <div className="w-8 h-[1px] bg-current" />
+                      <motion.div
+                        animate={{ rotate: [0, 180, 360] }}
+                        transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+                      >
+                        <Sparkles className="w-4 h-4" />
+                      </motion.div>
+                      <div className="w-8 h-[1px] bg-current" />
+                    </motion.div>
+                    
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.6 }}
+                    >
+                      <Button
+                        onClick={() => setRevealedNote(null)}
+                        variant="outline"
+                        className="border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground transition-all"
+                      >
+                        <Gift className="w-4 h-4 mr-2" />
+                        Close
+                      </Button>
+                    </motion.div>
                   </div>
                   
-                  <div className="relative">
-                    {renderNoteContent(revealedNote)}
-                  </div>
-                  
-                  <div className="flex items-center justify-center gap-2 my-6 text-primary/40">
-                    <div className="w-8 h-[1px] bg-current" />
-                    <Sparkles className="w-4 h-4" />
-                    <div className="w-8 h-[1px] bg-current" />
-                  </div>
-                  
-                  <Button
-                    onClick={() => setRevealedNote(null)}
-                    variant="outline"
-                    className="border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground transition-all"
-                  >
-                    <Gift className="w-4 h-4 mr-2" />
-                    Close
-                  </Button>
+                  {/* Dog ear */}
+                  <div 
+                    className="absolute bottom-0 right-0 w-8 h-8"
+                    style={{
+                      background: 'linear-gradient(135deg, transparent 50%, hsl(var(--foreground) / 0.04) 50%)',
+                    }}
+                  />
                 </div>
-                
-                <div 
-                  className="absolute bottom-0 right-0 w-8 h-8"
-                  style={{
-                    background: 'linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.04) 50%)',
-                  }}
-                />
-              </div>
-            </div>
-          </div>
+              </motion.div>
+            </motion.div>
+          </AnimatePresence>
         )}
 
         {/* Interactive Jar */}

@@ -24,6 +24,7 @@ dist-ssr
 *.sw?
 .env
 temp/
+temp/vivlit-light-up-moments-main
 .kiro/
 .vscode/
 .agents

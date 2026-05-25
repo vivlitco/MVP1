@@ -1,4 +1,5 @@
 import { Heart, Instagram, Linkedin, Youtube } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -20,25 +21,13 @@ const Footer = () => {
               and celebrate memories through personalized digital gifting experiences.
             </p>
             <div className="flex gap-4">
-              <a
-                href="#"
-                className="w-10 h-10 bg-primary/10 hover:bg-primary/20 rounded-full flex items-center justify-center transition-colors duration-300 group"
-                aria-label="Instagram"
-              >
+              <a href="#" className="w-10 h-10 bg-primary/10 hover:bg-primary/20 rounded-full flex items-center justify-center transition-colors duration-300 group" aria-label="Instagram">
                 <Instagram className="w-5 h-5 text-primary group-hover:scale-110 transition-transform duration-300" />
               </a>
-              <a
-                href="#"
-                className="w-10 h-10 bg-primary/10 hover:bg-primary/20 rounded-full flex items-center justify-center transition-colors duration-300 group"
-                aria-label="LinkedIn"
-              >
+              <a href="#" className="w-10 h-10 bg-primary/10 hover:bg-primary/20 rounded-full flex items-center justify-center transition-colors duration-300 group" aria-label="LinkedIn">
                 <Linkedin className="w-5 h-5 text-primary group-hover:scale-110 transition-transform duration-300" />
               </a>
-              <a
-                href="#"
-                className="w-10 h-10 bg-primary/10 hover:bg-primary/20 rounded-full flex items-center justify-center transition-colors duration-300 group"
-                aria-label="YouTube"
-              >
+              <a href="#" className="w-10 h-10 bg-primary/10 hover:bg-primary/20 rounded-full flex items-center justify-center transition-colors duration-300 group" aria-label="YouTube">
                 <Youtube className="w-5 h-5 text-primary group-hover:scale-110 transition-transform duration-300" />
               </a>
             </div>
@@ -48,26 +37,12 @@ const Footer = () => {
           <div>
             <h3 className="font-heading font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              <li>
-                <a href="#features" className="text-muted-foreground hover:text-primary transition-colors duration-300">
-                  Features
-                </a>
-              </li>
-              <li>
-                <a href="#how-it-works" className="text-muted-foreground hover:text-primary transition-colors duration-300">
-                  How It Works
-                </a>
-              </li>
-              <li>
-                <a href="#gallery" className="text-muted-foreground hover:text-primary transition-colors duration-300">
-                  Gallery
-                </a>
-              </li>
-              <li>
-                <a href="#about" className="text-muted-foreground hover:text-primary transition-colors duration-300">
-                  About Us
-                </a>
-              </li>
+              <li><Link to="/create-jar" className="text-muted-foreground hover:text-primary transition-colors duration-300">Create a Jar</Link></li>
+              <li><Link to="/create-card" className="text-muted-foreground hover:text-primary transition-colors duration-300">E-Cards</Link></li>
+              <li><Link to="/features" className="text-muted-foreground hover:text-primary transition-colors duration-300">Features</Link></li>
+              <li><Link to="/gallery" className="text-muted-foreground hover:text-primary transition-colors duration-300">Gallery</Link></li>
+              <li><Link to="/about" className="text-muted-foreground hover:text-primary transition-colors duration-300">About Us</Link></li>
+              <li><Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors duration-300">Contact Us</Link></li>
             </ul>
           </div>
 
@@ -75,21 +50,9 @@ const Footer = () => {
           <div>
             <h3 className="font-heading font-semibold mb-4">Legal</h3>
             <ul className="space-y-2">
-              <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors duration-300">
-                  Terms of Service
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors duration-300">
-                  Privacy Policy
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors duration-300">
-                  Contact Us
-                </a>
-              </li>
+              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors duration-300">Terms of Service</a></li>
+              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors duration-300">Privacy Policy</a></li>
+              <li><Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors duration-300">Contact Us</Link></li>
             </ul>
           </div>
         </div>
@@ -99,7 +62,7 @@ const Footer = () => {
           <p className="text-muted-foreground flex items-center justify-center gap-2">
             Made with
             <Heart className="w-4 h-4 text-accent fill-accent animate-pulse" />
-            by Team Vivlit © 2026
+            by Team Vivlit © {new Date().getFullYear()}
           </p>
         </div>
       </div>

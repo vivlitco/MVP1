@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Heart } from 'lucide-react';
+import { LogOut, User, Heart, Menu, X } from 'lucide-react';
+import { useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,8 +12,18 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
+const NAV_LINKS = [
+  { label: 'Create Jar', href: '/create-jar' },
+  { label: 'E-Cards', href: '/create-card' },
+  { label: 'Gallery', href: '/gallery' },
+  { label: 'Features', href: '/features' },
+  { label: 'About', href: '/about' },
+  { label: 'Contact', href: '/contact' },
+];
+
 const Navbar = () => {
   const { user, signOut, loading } = useAuth();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const getInitials = () => {
     if (user?.user_metadata?.full_name) {
@@ -33,7 +44,28 @@ const Navbar = () => {
           <span className="font-script text-3xl font-bold text-primary group-hover:scale-105 transition-transform inline-block">Vivlit</span>
         </Link>
 
-        <div className="flex items-center gap-4">
+        {/* Desktop nav links */}
+        <div className="hidden md:flex items-center gap-6">
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              to={link.href}
+              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-3">
+          {/* Mobile menu toggle */}
+          <button
+            className="md:hidden p-2 text-muted-foreground hover:text-primary"
+            onClick={() => setMobileOpen(!mobileOpen)}
+          >
+            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+
           {!loading && (
             <>
               {user ? (
@@ -99,6 +131,24 @@ const Navbar = () => {
           )}
         </div>
       </div>
+
+      {/* Mobile nav dropdown */}
+      {mobileOpen && (
+        <div className="md:hidden border-t border-border/30 bg-card/95 backdrop-blur-lg">
+          <div className="container mx-auto px-4 py-4 flex flex-col gap-3">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                to={link.href}
+                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors py-2"
+                onClick={() => setMobileOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
