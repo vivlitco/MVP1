@@ -11,25 +11,25 @@ const usePrefersReducedMotion = () => {
 };
 
 /**
- * Cinematic hero — composed as a film sequence, not a scroll-driven slider.
+ * Film sequence over 320vh. Lenis handles scroll smoothness.
+ * Springs only add extra physical weight where needed (lid, note, jar).
  *
- * Sequence over 320vh (scrollYProgress 0 → 1):
+ * Composition per state:
+ *   STATE 1 — headline above the jar, jar at center-left tilt
+ *   STATE 2 — jar front-and-center, sub-headline *below* jar
+ *   STATE 3 — jar front-and-center, CTA *below* jar
+ *   STATE 4 — lid opens, note rises above jar
  *
- *   0.00 – 0.18  STATE 1: STILLNESS         everything at rest
- *   0.18 – 0.30  TRANSITION: headline exits  only the headline moves
- *   0.30 – 0.40  TRANSITION: jar rotates     only the jar moves
- *   0.40 – 0.55  STATE 2: FOCUS (hold)       sub-headline fades in mid-hold
- *   0.55 – 0.65  TRANSITION: sub → CTA       crossfade only
- *   0.65 – 0.75  STATE 3: INVITE (hold)      CTA visible, everything still
- *   0.75 – 0.82  TRANSITION: CTA exits       only opacity moves
- *   0.82 – 0.93  TRANSITION: lid lifts       only the lid moves
- *   0.93 – 1.00  STATE 4: REVEAL             only the note moves
- *
- * Principles:
- *   - One primary motion at a time
- *   - Real holds between beats (40-55, 65-75) — the screen rests
- *   - Heavy springs (high mass, low stiffness) so motion lags scroll → physicality
- *   - Headline does not move during jar rotation, jar does not move during lid lift, etc.
+ * Scroll phases (0 → 1 over 320vh):
+ *   0.00 – 0.18  STILLNESS       nothing moves after mount
+ *   0.18 – 0.30  headline exits  only headline (opacity + y)
+ *   0.30 – 0.42  jar rotates     only jar (rotateY + scale)
+ *   0.42 – 0.55  FOCUS hold      sub-headline fades in below jar
+ *   0.55 – 0.64  sub exits       crossfade
+ *   0.64 – 0.74  INVITE hold     CTA visible below jar
+ *   0.74 – 0.80  CTA exits
+ *   0.80 – 0.93  lid lifts       only lid rotates
+ *   0.93 – 1.00  note rises      only note moves
  */
 const CinematicHero = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -40,38 +40,37 @@ const CinematicHero = () => {
     offset: ['start start', 'end end'],
   });
 
-  // ── HEAD­LINE ── exits cleanly before jar moves
-  const headlineOpacityRaw = useTransform(scrollYProgress, [0.0, 0.18, 0.30], [1, 1, 0]);
-  const headlineYRaw       = useTransform(scrollYProgress, [0.18, 0.30],       [0, -36]);
-  const headlineOpacity    = useSpring(headlineOpacityRaw, { stiffness: 60, damping: 24 });
-  const headlineY          = useSpring(headlineYRaw,       { stiffness: 45, damping: 26, mass: 1.6 });
+  // ── HEADLINE ── above the jar; exits cleanly before jar moves
+  // No spring here — Lenis already smooths the input; crisp response is better
+  const headlineOpacity = useTransform(scrollYProgress, [0.0, 0.18, 0.30], [1, 1, 0]);
+  const headlineY       = useTransform(scrollYProgress, [0.18, 0.30],       [0, -32]);
 
-  // ── JAR ── moves only after headline is gone. Heavy, deliberate.
+  // ── JAR ── starts tilted, rotates to face-forward after headline gone
+  // Light spring for physical weight without excessive lag (Lenis already smoothing)
   const jarRotateYRaw = useTransform(scrollYProgress, [0.30, 0.42], [-22, 0]);
   const jarScaleRaw   = useTransform(scrollYProgress, [0.30, 0.42], [0.88, 1.0]);
-  const jarRotateY    = useSpring(jarRotateYRaw, { stiffness: 32, damping: 26, mass: 2.4 });
-  const jarScale      = useSpring(jarScaleRaw,   { stiffness: 32, damping: 26, mass: 2.4 });
+  const jarRotateY    = useSpring(jarRotateYRaw, { stiffness: 50, damping: 24, mass: 1.6 });
+  const jarScale      = useSpring(jarScaleRaw,   { stiffness: 50, damping: 24, mass: 1.6 });
 
-  // ── SUB­HEAD­LINE ── appears inside the FOCUS hold (after jar settles)
-  const subOpacity = useTransform(scrollYProgress, [0.44, 0.52, 0.58, 0.62], [0, 1, 1, 0]);
+  // ── SUB-HEADLINE ── appears BELOW the jar during the FOCUS hold
+  const subOpacity = useTransform(scrollYProgress, [0.44, 0.52, 0.57, 0.62], [0, 1, 1, 0]);
 
-  // ── CTA ── enters cleanly after sub-headline leaves; holds; then exits before lid moves
-  const ctaOpacity = useTransform(scrollYProgress, [0.62, 0.68, 0.75, 0.80], [0, 1, 1, 0]);
+  // ── CTA ── appears BELOW the jar during the INVITE hold
+  const ctaOpacity = useTransform(scrollYProgress, [0.62, 0.68, 0.74, 0.79], [0, 1, 1, 0]);
 
-  // ── LID ── only thing moving from 0.82 → 0.93. Very weighted (mass 3.5).
-  const lidRotateXRaw = useTransform(scrollYProgress, [0.82, 0.93], [0, -65]);
-  const lidRotateX    = useSpring(lidRotateXRaw, { stiffness: 26, damping: 32, mass: 3.5 });
+  // ── LID ── heavy spring — the one place we want felt physical weight
+  const lidRotateXRaw = useTransform(scrollYProgress, [0.80, 0.93], [0, -65]);
+  const lidRotateX    = useSpring(lidRotateXRaw, { stiffness: 28, damping: 30, mass: 3.2 });
 
-  // ── NOTE ── only thing moving from 0.93 → 1.0. Slow float.
+  // ── NOTE ── medium spring — slow float upward
   const noteYRaw       = useTransform(scrollYProgress, [0.93, 1.0],  [80, -20]);
   const noteOpacityRaw = useTransform(scrollYProgress, [0.93, 0.98], [0, 1]);
-  const noteY          = useSpring(noteYRaw,       { stiffness: 22, damping: 22, mass: 2.6 });
-  const noteOpacity    = useSpring(noteOpacityRaw, { stiffness: 40, damping: 22 });
+  const noteY          = useSpring(noteYRaw,       { stiffness: 32, damping: 22, mass: 2.0 });
+  const noteOpacity    = useSpring(noteOpacityRaw, { stiffness: 50, damping: 22 });
 
-  // ── SCROLL HINT ── fades fast at start
+  // ── SCROLL HINT ──
   const hintOpacity = useTransform(scrollYProgress, [0, 0.08, 0.16], [1, 1, 0]);
 
-  // Reduced-motion fallback
   if (reduced) {
     return (
       <section
@@ -108,7 +107,6 @@ const CinematicHero = () => {
       style={{ height: '320vh', position: 'relative' }}
       aria-label="Hero — scroll to reveal"
     >
-      {/* Sticky viewport */}
       <div
         style={{
           position: 'sticky',
@@ -121,7 +119,7 @@ const CinematicHero = () => {
           background: 'var(--bg-page)',
         }}
       >
-        {/* Soft ambient warm background — static, no motion */}
+        {/* Static ambient gradient — never animates */}
         <div
           style={{
             position: 'absolute',
@@ -132,13 +130,14 @@ const CinematicHero = () => {
           aria-hidden="true"
         />
 
-        {/* ── HEADLINE LAYER ── exits before jar moves */}
+        {/* ── HEADLINE ── above the jar, STATE 1 only */}
         <motion.div
           style={{
             opacity: headlineOpacity,
             y: headlineY,
+            willChange: 'opacity, transform',
             position: 'absolute',
-            top: '16%',
+            top: '13%',
             left: '50%',
             x: '-50%',
             width: 'min(620px, 90vw)',
@@ -148,7 +147,7 @@ const CinematicHero = () => {
           }}
         >
           <motion.p
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 1.2, ease: [0.25, 0.1, 0.08, 1] }}
             style={{
@@ -164,7 +163,7 @@ const CinematicHero = () => {
             A digital keepsake
           </motion.p>
           <motion.h1
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 1.4, ease: [0.25, 0.1, 0.08, 1] }}
             style={{
@@ -190,15 +189,35 @@ const CinematicHero = () => {
           </motion.h1>
         </motion.div>
 
-        {/* ── SUB-HEADLINE ── lives entirely inside the FOCUS hold */}
+        {/* ── JAR SCENE ── always centered, the protagonist */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 5,
+            willChange: 'transform',
+          }}
+          aria-hidden="true"
+        >
+          <HeroJar rotateY={jarRotateY} scale={jarScale} lidRotateX={lidRotateX} />
+
+          <div style={{ position: 'absolute', top: -60, left: 0, right: 0 }}>
+            <HeroNote y={noteY} opacity={noteOpacity} />
+          </div>
+        </div>
+
+        {/* ── SUB-HEADLINE ── BELOW the jar, STATE 2 (FOCUS hold) */}
         <motion.div
           style={{
             opacity: subOpacity,
+            willChange: 'opacity',
             position: 'absolute',
-            top: '14%',
+            bottom: '12%',
             left: '50%',
             x: '-50%',
-            width: 'min(520px, 88vw)',
+            width: 'min(480px, 88vw)',
             textAlign: 'center',
             zIndex: 10,
             pointerEvents: 'none',
@@ -206,7 +225,7 @@ const CinematicHero = () => {
         >
           <p style={{
             fontFamily: 'Poppins, sans-serif',
-            fontSize: 'clamp(16px, 2vw, 20px)',
+            fontSize: 'clamp(15px, 1.8vw, 19px)',
             color: 'var(--ink-secondary)',
             lineHeight: 1.75,
             margin: 0,
@@ -217,92 +236,72 @@ const CinematicHero = () => {
           </p>
         </motion.div>
 
-        {/* ── CTA ── enters inside the INVITE hold; exits before lid lifts */}
+        {/* ── CTA ── BELOW the jar, STATE 3 (INVITE hold) */}
         <motion.div
           style={{
             opacity: ctaOpacity,
+            willChange: 'opacity',
             position: 'absolute',
-            top: '20%',
+            bottom: '12%',
             left: '50%',
             x: '-50%',
             zIndex: 10,
             display: 'flex',
-            gap: 16,
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 12,
             pointerEvents: 'auto',
           }}
         >
-          <Link to="/create-jar">
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              style={{
-                background: 'var(--accent-plum)',
-                color: 'white',
-                border: 'none',
-                borderRadius: 8,
-                padding: '14px 36px',
-                fontSize: 15,
-                fontWeight: 600,
-                fontFamily: 'Poppins, sans-serif',
-                cursor: 'pointer',
-                boxShadow: '0 4px 20px rgba(120,60,180,0.25)',
-                transition: 'box-shadow 0.2s',
-              }}
-            >
-              Create your jar
-            </motion.button>
-          </Link>
-          <Link to="/gallery">
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              style={{
-                background: 'transparent',
-                color: 'var(--ink-secondary)',
-                border: '1.5px solid rgba(120,80,160,0.25)',
-                borderRadius: 8,
-                padding: '14px 28px',
-                fontSize: 15,
-                fontWeight: 500,
-                fontFamily: 'Poppins, sans-serif',
-                cursor: 'pointer',
-                transition: 'border-color 0.2s',
-              }}
-            >
-              See examples
-            </motion.button>
-          </Link>
-        </motion.div>
-
-        {/* ── JAR SCENE ── the protagonist. Centered, stable.  */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            zIndex: 5,
-          }}
-          aria-hidden="true"
-        >
-          <HeroJar
-            rotateY={jarRotateY}
-            scale={jarScale}
-            lidRotateX={lidRotateX}
-          />
-
-          {/* Rising note — appears in the final state only */}
-          <div style={{ position: 'absolute', top: -60, left: 0, right: 0 }}>
-            <HeroNote y={noteY} opacity={noteOpacity} />
+          <div style={{ display: 'flex', gap: 14 }}>
+            <Link to="/create-jar">
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                style={{
+                  background: 'var(--accent-plum)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 8,
+                  padding: '13px 34px',
+                  fontSize: 15,
+                  fontWeight: 600,
+                  fontFamily: 'Poppins, sans-serif',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 20px rgba(120,60,180,0.25)',
+                }}
+              >
+                Create your jar
+              </motion.button>
+            </Link>
+            <Link to="/gallery">
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                style={{
+                  background: 'transparent',
+                  color: 'var(--ink-secondary)',
+                  border: '1.5px solid rgba(120,80,160,0.3)',
+                  borderRadius: 8,
+                  padding: '13px 26px',
+                  fontSize: 15,
+                  fontWeight: 500,
+                  fontFamily: 'Poppins, sans-serif',
+                  cursor: 'pointer',
+                }}
+              >
+                See examples
+              </motion.button>
+            </Link>
           </div>
-        </div>
+        </motion.div>
 
         {/* ── SCROLL HINT ── */}
         <motion.div
           style={{
             opacity: hintOpacity,
             position: 'absolute',
-            bottom: 40,
+            bottom: 36,
             left: '50%',
             x: '-50%',
             zIndex: 10,

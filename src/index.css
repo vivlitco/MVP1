@@ -517,6 +517,7 @@
   }
   .hero-jar-inner {
     transform-style: preserve-3d;
+    will-change: transform;
   }
 
   /* Hero note — feels like physical paper */
