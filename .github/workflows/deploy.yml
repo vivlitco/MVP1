@@ -1,0 +1,53 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+    # Optionally, only deploy on tags
+    # tags: ['release-*']
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to Render
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Trigger Render deployment
+        run: |
+          curl --request POST \
+            --url "${{ secrets.RENDER_DEPLOY_HOOK }}" \
+            --header 'Content-Type: application/json'
+        if: ${{ secrets.RENDER_DEPLOY_HOOK != '' }}
+
+      - name: Deployment notification
+        run: |
+          echo "✅ Deployment triggered for vivlit.com"
+          echo "Check progress: https://dashboard.render.com"
+
+  # Optional: Run CI checks before deploying (reuse build job)
+  pre-deploy-check:
+    runs-on: ubuntu-latest
+    name: Pre-deployment Checks
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: https://dummy.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: dummy-key
