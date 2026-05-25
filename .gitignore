@@ -23,5 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 .env
-*.md
-temp
+temp/
+.kiro/
+.vscode/
+
+temp/vivlit-light-up-moments-main/

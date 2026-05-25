@@ -3,30 +3,8 @@ name: Deploy to Production
 on:
   push:
     branches: [main]
-    # Optionally, only deploy on tags
-    # tags: ['release-*']
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    name: Deploy to Render
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Trigger Render deployment
-        run: |
-          curl --request POST \
-            --url "${{ secrets.RENDER_DEPLOY_HOOK }}" \
-            --header 'Content-Type: application/json'
-        if: ${{ secrets.RENDER_DEPLOY_HOOK != '' }}
-
-      - name: Deployment notification
-        run: |
-          echo "✅ Deployment triggered for vivlit.com"
-          echo "Check progress: https://dashboard.render.com"
-
-  # Optional: Run CI checks before deploying (reuse build job)
   pre-deploy-check:
     runs-on: ubuntu-latest
     name: Pre-deployment Checks
@@ -51,3 +29,26 @@ jobs:
         env:
           VITE_SUPABASE_URL: https://dummy.supabase.co
           VITE_SUPABASE_PUBLISHABLE_KEY: dummy-key
+
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to Vercel
+    needs: pre-deploy-check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Vercel
+        uses: vercel/action@main
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          production: true
+
+      - name: Deployment notification
+        run: |
+          echo "✅ Successfully deployed to Vercel"
+          echo "Live at: https://vivlit.com"
+          echo "Dashboard: https://vercel.com/dashboard"
