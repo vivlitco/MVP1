@@ -11,16 +11,24 @@ import CreateJar from "./pages/CreateJar";
 import EditJar from "./pages/EditJar";
 import ViewJar from "./pages/ViewJar";
 import Profile from "./pages/Profile";
+import CreateCard from "./pages/CreateCard";
+import ViewCard from "./pages/ViewCard";
+import ContributePage from "./pages/ContributePage";
+import GalleryPage from "./pages/GalleryPage";
+import FeaturesPage from "./pages/FeaturesPage";
+import AboutPage from "./pages/AboutPage";
+import ContactPage from "./pages/ContactPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
+    <BrowserRouter>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
@@ -29,11 +37,19 @@ const App = () => (
             <Route path="/create-jar" element={<CreateJar />} />
             <Route path="/edit-jar/:id" element={<EditJar />} />
             <Route path="/jar/:token" element={<ViewJar />} />
+            <Route path="/create-card" element={<CreateCard />} />
+            <Route path="/card/:token" element={<ViewCard />} />
+            <Route path="/contribute/:token" element={<ContributePage />} />
+            <Route path="/gallery" element={<GalleryPage />} />
+            <Route path="/features" element={<FeaturesPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-      </TooltipProvider>
-    </AuthProvider>
+        </TooltipProvider>
+      </AuthProvider>
+    </BrowserRouter>
   </QueryClientProvider>
 );
 

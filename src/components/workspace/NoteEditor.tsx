@@ -4,6 +4,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { NOTE_THEMES } from '@/lib/themes';
+import AiMessageAssistant from '@/components/AiMessageAssistant';
 import { 
   Type, Image, Mic, Link2, X, Upload, Square, Plus, Sparkles
 } from 'lucide-react';
@@ -152,12 +153,17 @@ export const NoteEditor = ({ onAddNote }: NoteEditorProps) => {
       {/* Content input based on type */}
       <div className="min-h-[120px]">
         {noteType === 'text' && (
-          <Textarea
-            placeholder="Write something sweet... 💕"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="min-h-[120px] text-base resize-none border-2 border-dashed border-primary/20 focus:border-primary/40 bg-background/50"
-          />
+          <div className="space-y-2">
+            <div className="flex justify-end">
+              <AiMessageAssistant onSelectMessage={(msg) => setContent(msg)} />
+            </div>
+            <Textarea
+              placeholder="Write something sweet... 💕"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              className="min-h-[120px] text-base resize-none border-2 border-dashed border-primary/20 focus:border-primary/40 bg-background/50"
+            />
+          </div>
         )}
 
         {noteType === 'link' && (

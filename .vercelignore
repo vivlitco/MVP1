@@ -1,0 +1,15 @@
+.env
+.env.local
+.env.*.local
+.git
+.gitignore
+node_modules
+npm-debug.log
+dist
+build
+.next
+supabase/migrations
+supabase/seed.sql
+DEPLOYMENT_RENDER.md
+.github/CI_CD_SETUP.md
+temp/

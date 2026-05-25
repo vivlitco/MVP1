@@ -16,19 +16,19 @@
     --primary: 270 70% 40%;
     --primary-foreground: 0 0% 100%;
     --primary-light: 270 50% 85%;
-    
+
     /* Light pink secondary */
     --secondary: 330 60% 95%;
     --secondary-foreground: 270 60% 25%;
-    
+
     /* Soft pink accent */
     --accent: 330 70% 80%;
     --accent-foreground: 270 60% 25%;
-    
+
     /* Light lavender mint */
     --mint: 280 40% 94%;
     --mint-foreground: 270 60% 25%;
-    
+
     /* Pink-purple for special text */
     --gold: 300 50% 65%;
     --gold-foreground: 270 60% 25%;
@@ -52,13 +52,53 @@
 
     --radius: 1rem;
 
+    /* Semantic flat colors (for non-Tailwind use) */
+    --vv-bg:        hsl(330 50% 97%);
+    --vv-fg:        hsl(270 60% 25%);
+    --vv-fg-muted:  hsl(270 30% 50%);
+    --vv-card:      hsl(330 40% 99%);
+    --vv-border:    hsl(330 40% 88%);
+
+    /* Semantic color palette */
+    --vv-purple-900: hsl(270 70% 25%);
+    --vv-purple-700: hsl(270 70% 35%);
+    --vv-purple-500: hsl(270 70% 50%);
+    --vv-purple-300: hsl(270 60% 75%);
+    --vv-purple-100: hsl(270 50% 92%);
+
+    --vv-pink-900:   hsl(330 70% 50%);
+    --vv-pink-700:   hsl(330 70% 65%);
+    --vv-pink-500:   hsl(330 70% 80%);
+    --vv-pink-300:   hsl(330 65% 90%);
+    --vv-pink-100:   hsl(330 50% 96%);
+
+    --vv-lilac-500:  hsl(280 60% 75%);
+    --vv-lilac-300:  hsl(280 50% 88%);
+    --vv-lilac-100:  hsl(280 40% 94%);
+
+    --vv-gold:       hsl(43 80% 70%);
+    --vv-gold-soft:  hsl(43 80% 85%);
+
+    /* Jar / Card theme palette (10 themes) */
+    --vv-theme-warm:      #ffd6a5;
+    --vv-theme-lavender:  #c4a5de;
+    --vv-theme-mint:      #bde0fe;
+    --vv-theme-rose:      #ffc8dd;
+    --vv-theme-ocean:     #7dd3fc;
+    --vv-theme-sunset:    #fdba74;
+    --vv-theme-forest:    #86efac;
+    --vv-theme-candy:     #f0abfc;
+    --vv-theme-midnight:  #a5b4fc;
+    --vv-theme-golden:    #fcd34d;
+
     /* Baby Pink & Deep Purple Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(330, 70%, 85%) 0%, hsl(280, 60%, 75%) 50%, hsl(270, 70%, 60%) 100%);
     --gradient-secondary: linear-gradient(135deg, hsl(330, 50%, 95%) 0%, hsl(280, 40%, 94%) 100%);
     --gradient-soft: linear-gradient(180deg, hsl(330, 40%, 98%) 0%, hsl(330, 50%, 96%) 100%);
     --gradient-storybook: linear-gradient(135deg, hsl(330, 50%, 97%) 0%, hsl(300, 40%, 95%) 50%, hsl(280, 45%, 95%) 100%);
     --gradient-magic: linear-gradient(135deg, hsl(330, 65%, 85%) 0%, hsl(270, 60%, 70%) 100%);
-    
+    --gradient-text-gold: linear-gradient(135deg, hsl(330, 65%, 70%) 0%, hsl(270, 70%, 50%) 100%);
+
     /* Pink/Purple Shadows */
     --shadow-soft: 0 4px 20px -4px hsl(270, 50%, 50% / 0.15);
     --shadow-float: 0 12px 40px -8px hsl(270, 60%, 50% / 0.2);
@@ -307,6 +347,97 @@
     animation: magic-appear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   }
 
+  /* Semantic typography classes */
+  .vv-h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: clamp(2.25rem, 4vw + 1rem, 4.5rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: hsl(var(--foreground));
+  }
+
+  .vv-h1-script {
+    font-family: 'Dancing Script', cursive;
+    font-weight: 700;
+    font-size: clamp(3rem, 6vw + 1rem, 6rem);
+    line-height: 1;
+    background: var(--gradient-text-gold);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  .vv-h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: clamp(1.875rem, 2.5vw + 1rem, 3rem);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: hsl(var(--foreground));
+  }
+
+  .vv-h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 600;
+    font-size: 1.5rem;
+    line-height: 1.25;
+    color: hsl(var(--foreground));
+  }
+
+  .vv-h4 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 600;
+    font-size: 1.125rem;
+    line-height: 1.3;
+    color: hsl(var(--foreground));
+  }
+
+  .vv-eyebrow {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    font-size: 0.875rem;
+    letter-spacing: 0.02em;
+    color: hsl(var(--foreground));
+  }
+
+  .vv-p {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
+    font-size: 1rem;
+    line-height: 1.65;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .vv-p-lg {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
+    font-size: 1.125rem;
+    line-height: 1.65;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .vv-small {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .vv-script {
+    font-family: 'Dancing Script', cursive;
+    font-weight: 600;
+  }
+
+  .vv-letter-body {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 400;
+    font-size: 1rem;
+    line-height: 1.85;
+  }
+
   /* Gradient text - pink/purple version */
   .gradient-text {
     background: var(--gradient-primary);
@@ -316,10 +447,26 @@
   }
 
   .gradient-text-gold {
-    background: linear-gradient(135deg, hsl(330, 65%, 70%) 0%, hsl(270, 70%, 50%) 100%);
+    background: var(--gradient-text-gold);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+
+  .vv-gradient-text {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  .vv-gradient-text-gold {
+    background: var(--gradient-text-gold);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
   }
 
   /* Paper texture card effect */

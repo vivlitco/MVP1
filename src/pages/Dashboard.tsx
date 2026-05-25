@@ -101,15 +101,18 @@ const Dashboard = () => {
 
   const fetchSharedJars = async () => {
     try {
-      const userEmail = user?.email?.toLowerCase();
       const userId = user?.id;
-      
-      if (!userId || !userEmail) {
-        console.log('No user email or id for fetching shared jars');
-        return;
+      if (!userId) return;
+
+      // Atomically claim any email-based shares for this user server-side.
+      // Non-fatal: if the RPC isn't deployed yet, existing user_id-based shares still load.
+      const { error: claimError } = await supabase.rpc('claim_shared_jars');
+      if (claimError) {
+        console.warn('claim_shared_jars failed (non-fatal):', claimError);
       }
-      
-      // Fetch shares by user_id OR by email (case-insensitive)
+
+      // Fetch only shares directed to this user_id (server-side filter).
+      // After claim_shared_jars runs, email-based shares are converted to user_id-based.
       const { data: shares, error } = await supabase
         .from('jar_shares')
         .select(`
@@ -117,41 +120,23 @@ const Dashboard = () => {
           jar_id,
           shared_at,
           shared_by_user_id,
-          shared_to_user_id,
-          shared_to_email,
           jars (*)
-        `);
+        `)
+        .eq('shared_to_user_id', userId)
+        .order('shared_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching jar_shares:', error);
         throw error;
       }
-      
-      // Filter client-side for proper case-insensitive email matching
-      const userShares = (shares || []).filter(s => 
-        s.shared_to_user_id === userId || 
-        (s.shared_to_email && s.shared_to_email.toLowerCase() === userEmail)
-      );
-      
-      // Update shares that match by email to also have user_id
-      const sharesToUpdate = userShares.filter(
-        s => s.shared_to_email?.toLowerCase() === userEmail && !s.shared_to_user_id
-      );
-      
-      for (const share of sharesToUpdate) {
-        await supabase
-          .from('jar_shares')
-          .update({ shared_to_user_id: userId, accepted_at: new Date().toISOString() })
-          .eq('id', share.id);
-      }
-      
-      const sharedJarsData: SharedJar[] = userShares
+
+      const sharedJarsData: SharedJar[] = (shares || [])
         .filter(s => s.jars)
         .map(s => ({
           ...(s.jars as any),
           shared_at: s.shared_at,
         }));
-      
+
       setSharedJars(sharedJarsData);
     } catch (error: any) {
       console.error('Failed to load shared jars:', error);
@@ -160,23 +145,25 @@ const Dashboard = () => {
 
   const fetchActivities = async () => {
     try {
+      if (!user?.id) return;
+
       const { data, error } = await supabase
         .from('jar_activity')
         .select(`
           *,
           jars (name)
         `)
-        .or(`user_id.eq.${user?.id}`)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(20);
 
       if (error) throw error;
-      
+
       const activitiesWithNames = (data || []).map(a => ({
         ...a,
         jar_name: (a.jars as any)?.name,
       }));
-      
+
       setActivities(activitiesWithNames);
     } catch (error: any) {
       console.error('Failed to load activities:', error);
