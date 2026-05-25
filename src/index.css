@@ -110,6 +110,23 @@
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     --transition-magic: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    /* Cinematic easing */
+    --ease-cinema: cubic-bezier(0.25, 0.1, 0.08, 1.0);
+    --ease-lift:   cubic-bezier(0.34, 1.06, 0.64, 1.0);
+    --ease-weight: cubic-bezier(0.76, 0, 0.24, 1.0);
+
+    /* Cinematic palette overrides */
+    --bg-page:        hsl(38, 40%, 97%);
+    --bg-section:     hsl(30, 35%, 95%);
+    --ink-primary:    hsl(270, 45%, 20%);
+    --ink-secondary:  hsl(270, 20%, 45%);
+    --ink-muted:      hsl(30, 15%, 55%);
+    --accent-rose:    hsl(345, 55%, 72%);
+    --accent-plum:    hsl(280, 45%, 60%);
+    --accent-gold:    hsl(38, 65%, 68%);
+    --jar-glass:      rgba(255, 252, 248, 0.72);
+    --jar-shadow:     hsla(270, 30%, 30%, 0.18);
   }
 }
 
@@ -491,6 +508,23 @@
     background: rgba(255, 252, 248, 0.8);
     backdrop-filter: blur(12px);
     border: 1px solid rgba(212, 165, 116, 0.2);
+  }
+
+  /* Cinematic hero jar stage */
+  .hero-jar-stage {
+    perspective: 1100px;
+    perspective-origin: 50% 45%;
+  }
+  .hero-jar-inner {
+    transform-style: preserve-3d;
+  }
+
+  /* Hero note — feels like physical paper */
+  .hero-note {
+    background: linear-gradient(160deg, #fffefa 0%, #fefcf2 100%);
+    border: 1px solid rgba(200, 185, 160, 0.35);
+    box-shadow: 0 4px 20px rgba(100, 80, 60, 0.12), 0 1px 3px rgba(100, 80, 60, 0.08);
+    font-family: Georgia, 'Times New Roman', serif;
   }
 
   .glass-warm {
