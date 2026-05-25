@@ -10,6 +10,4 @@ build
 .next
 supabase/migrations
 supabase/seed.sql
-DEPLOYMENT_RENDER.md
-.github/CI_CD_SETUP.md
 temp/

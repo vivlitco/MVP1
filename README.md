@@ -56,23 +56,23 @@ This project is built with:
 
 ## How can I deploy this project?
 
-Vivlit is configured to deploy on Render.com with the custom domain vivlit.com.
+Vivlit is configured for production deployment on Vercel with the custom domain vivlit.com.
 
 ### Deployment Steps:
 
-1. Connect your GitHub repository to Render
-2. Create a new Web Service and select this repository
-3. Configure environment variables (see .env.example)
-4. Set build command: `npm run build`
-5. Set start command: `npm run preview` or configure for production
-6. Connect your vivlit.com domain in Render dashboard
+1. Connect your GitHub repository to Vercel
+2. Import the project as a new Vercel app
+3. Configure the required environment variables in Vercel Project Settings
+4. Keep the build command as `npm run build`
+5. Set the output directory to `dist`
+6. Add your vivlit.com domain in the Vercel dashboard
 
 ### Custom Domain Setup:
 
-1. In Render dashboard, go to your service settings
-2. Navigate to "Custom Domains" section
+1. In Vercel dashboard, open your project settings
+2. Navigate to the "Domains" section
 3. Add your domain: `vivlit.com`
-4. Update your domain DNS records with Render's nameservers
+4. Update your domain DNS records as instructed by Vercel
 5. Verify domain ownership
 
-For more details, see the deployment configuration in your environment variables.
+For more details, see the Vercel deployment configuration and environment variables.
