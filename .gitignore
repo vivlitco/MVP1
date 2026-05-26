@@ -23,10 +23,19 @@ dist-ssr
 *.sln
 *.sw?
 .env
+.env.local
+.env.test
+.env.*.local
 temp/
 temp/vivlit-light-up-moments-main
 .kiro/
 .vscode/
 .agents
 
+# Supabase (keep locally, do NOT track in Git)
+supabase/
+.supabase/
+.supabase.local
+
+# Database dumps and SQL (don't track)
 *.sql
